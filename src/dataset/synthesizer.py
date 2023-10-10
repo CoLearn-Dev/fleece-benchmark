@@ -6,6 +6,7 @@ from uuid import uuid4
 
 MAX_WORKLOAD_SIM_LENGTH = 1000000
 
+
 class Synthesizer(DatasetInterface):
     def convertToWorkloadFormat(self, prompt_source: List[str]) -> List[WorkLoadData]:
         self.prompt_source = prompt_source
@@ -24,7 +25,7 @@ class Synthesizer(DatasetInterface):
         if turn_distribution_generator != None:
             raise NotImplementedError(
                 "turn_distribution_generator will be supported in the future"
-            )       # TODO: support turn_distribution_generator
+            )  # TODO: support turn_distribution_generator
         turn_distribution_map = lambda: 1
         workloads: List[WorkLoadData] = []
         cur_time = 0
@@ -37,8 +38,16 @@ class Synthesizer(DatasetInterface):
                 turns = turn_distribution_map()
                 assert turns == 1, "multi-turn workload generate is not supported yet"
                 content = random.sample(self.prompt_source, 1)[0]
-                body = {"role":"user","content":content} if load_real_multi_turn else content
-                hyper = hyperparameter_generator() if hyperparameter_generator != None else None
+                body = (
+                    {"role": "user", "content": content}
+                    if load_real_multi_turn
+                    else content
+                )
+                hyper = (
+                    hyperparameter_generator()
+                    if hyperparameter_generator != None
+                    else None
+                )
                 workloads.append(
                     WorkLoadData(
                         index=DataId(
@@ -52,7 +61,6 @@ class Synthesizer(DatasetInterface):
                 )
             cur_time += 1
         return workloads
-
 
     def convertToAnalysisFormat(self) -> List[AnalysisData]:
         raise Exception("Synthesizer is simply used for pressure test")

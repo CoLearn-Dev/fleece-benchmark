@@ -19,6 +19,7 @@ class Hyperparameter:
     top_p: int | None = None
     max_tokens: int | None = None
 
+
 @define
 class WorkLoadData:
     """

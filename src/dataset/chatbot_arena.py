@@ -58,7 +58,7 @@ class ArenaDataset(DatasetInterface):
                 )
             )
         return analysis
-    
+
     def getPrompts(self) -> List[str]:
         prompts = []
         for v in self.dataset.values():
