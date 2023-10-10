@@ -131,6 +131,14 @@ class Oasst1Dataset(DatasetInterface):
                 )
         return analysis
 
+    def getPrompts(self) -> List[str]:
+        prompts = []
+        for dialog in self.dialogs:
+            for v in dialog.values():
+                if v["role"] == "prompter":
+                    prompts.append(v["text"])
+        return list(set(prompts))
+
 
 if __name__ == "__main__":
     # used for testing

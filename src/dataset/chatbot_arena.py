@@ -58,6 +58,14 @@ class ArenaDataset(DatasetInterface):
                 )
             )
         return analysis
+    
+    def getPrompts(self) -> List[str]:
+        prompts = []
+        for v in self.dataset.values():
+            for c in v["conversation_a"]:
+                if c["role"] == "user":
+                    prompts.append(c["content"])
+        return list(set(prompts))
 
 
 if __name__ == "__main__":

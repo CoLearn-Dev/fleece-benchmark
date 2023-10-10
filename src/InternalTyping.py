@@ -1,4 +1,5 @@
-from attrs import define
+from attrs import define, field
+import time
 from typing import List, Dict
 
 
@@ -10,6 +11,13 @@ class DataId:
     def __hash__(self) -> int:
         return hash((self.dataset_name, self.unique_id))
 
+
+@define(kw_only=True)
+class Hyperparameter:
+    n: int = 1
+    temperature: float | None = None
+    top_p: int | None = None
+    max_tokens: int | None = None
 
 @define
 class WorkLoadData:
@@ -26,10 +34,7 @@ class WorkLoadData:
     index: DataId
     timestamp: float
     workload_body: List[Dict[str, str]] | List[str]
-    n: int = 1
-    temputure: float | None = None
-    top_p: int | None = None
-    max_tokens: int | None = None
+    hyperparameter: Hyperparameter | None = None
 
 
 @define
@@ -40,3 +45,35 @@ class AnalysisData:
     language: str
     std_is_bad: bool = False
     std_response_timetable: List[float] | None = None
+
+
+@define(kw_only=True)
+class InferenceConfig:
+    api_base: str
+    api_key: str
+    model: str
+
+
+@define(kw_only=True)
+class StreamingDelta:
+    index: int
+    role: str | None = None
+    content: str | None = None
+    stop: str | None = None
+
+
+@define
+class StreamingResult:
+    ctx: StreamingDelta | Exception | None = None
+    timestamp: float = field(factory=time.time)
+
+
+@define(kw_only=True)
+class SimluateConfig:
+    inference_config: InferenceConfig
+    fast_mode: bool = False  # if True, the simulation will skip the gap time when there are no pending requests
+    HUMAN_TYPING_WPS: float = 1.0  # human typing speed: words per second
+    default_hyperparameter: Hyperparameter = Hyperparameter()
+    overwrite_hyperparameter: Hyperparameter | None = None
+    stop_on_endpoint_overload: bool = False
+    exit_on_benchmark_overload: bool = False
