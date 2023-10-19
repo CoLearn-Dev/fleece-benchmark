@@ -1,5 +1,5 @@
 from typing import List, Tuple, Any
-from .workload import Offset, Visit
+from .protocol import Offset, Visit
 
 
 def key_timestamp_to_offset(x: List[Tuple[float, Any]]) -> List[Tuple[Offset, Any]]:

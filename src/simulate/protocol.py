@@ -1,6 +1,5 @@
-from attrs import define, field
-import time
-from ..Datasets.workload import ReqId
+from attrs import define
+from ..Datasets.protocol import ReqId
 from typing import List, Tuple, Dict
 from ..API.api_protocol import ResPiece
 
@@ -9,6 +8,7 @@ from ..API.api_protocol import ResPiece
 class Response:
     req_id: ReqId
     start_timestamp: float
+    end_timestamp: float
     dialog: List[Dict[str, str]]
     loggings: List[Tuple[float, ResPiece]]
 

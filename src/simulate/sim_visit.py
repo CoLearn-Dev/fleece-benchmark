@@ -1,6 +1,6 @@
-from ..Datasets.workload import Visit, VisitCtx
-from .response import Response
-from typing import List, Dict, Any, Tuple
+from ..Datasets.protocol import Visit, VisitCtx
+from .protocol import Response, VisitResponse
+from typing import List, Tuple
 from ..API.openai import streaming_inference
 from ..API.api_protocol import ResPiece
 import time
@@ -8,12 +8,12 @@ import asyncio
 import logging
 
 
-async def sim_visit(visit: Visit, **kwargs) -> List[Response]:
+async def sim_visit(visit: Visit, **kwargs) -> VisitResponse:
     """
     Simulate a visit and return the responses.
     """
     ctx: VisitCtx = dict()
-    responses: List[Response] = []
+    responses: VisitResponse = []
     last_finish = None
     HUMAN_INPUT_WPS = kwargs.pop("human_input_wps", 1.0)  # FIXME: set as a arg?
     for scheduled_offest, sim_req in visit:
@@ -57,6 +57,7 @@ async def sim_visit(visit: Visit, **kwargs) -> List[Response]:
             Response(
                 req_id=sim_req.id,
                 start_timestamp=start_time,
+                end_timestamp=last_finish,
                 dialog=dialog + [{"role": "assitant", "content": ret_str}],
                 loggings=res_loggings,
             )
@@ -65,7 +66,7 @@ async def sim_visit(visit: Visit, **kwargs) -> List[Response]:
 
 
 if __name__ == "__main__":
-    from ..Datasets.workload import Visit, VisitCtx
+    from ..Datasets.protocol import Visit, VisitCtx
     from ..Datasets.arena import ArenaDataset
 
     logging.basicConfig(

@@ -1,15 +1,15 @@
 from .sim_visit import sim_visit
-from ..Datasets.workload import Workload, SimReq
-from .response import Response, VisitResponse
+from ..Datasets.protocol import Workload
+from .protocol import VisitResponse
 import asyncio
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 import logging
 import time
 
 
 async def sim_workload_in_single_thread(
     workload: Workload, sim_start_time: float | None, **kwargs
-) -> List[VisitResponse]:
+) -> List[VisitResponse | BaseException]:
     """
     Simulate a workload and return the responses.
     """
@@ -31,7 +31,7 @@ async def sim_workload_in_single_thread(
     logging.info("sim_workload_in_single_thread: start simulating.")
 
     tasks: List[Tuple[int, asyncio.Task]] = list()
-    ress: List[Tuple[int, VisitResponse]] = list()
+    ress: List[Tuple[int, VisitResponse | BaseException]] = list()
 
     TIME_STEP = kwargs.pop("time_step", TIME_TOLERANCE)
     CHECK_SIZE = kwargs.pop("check_size", 10)
@@ -72,7 +72,9 @@ async def sim_workload_in_single_thread(
             for i in range(len(tasks[:CHECK_SIZE])):
                 if tasks[i][1].done():
                     logging.info(f"visit {tasks[i][0]} done.")
-                    ress.append((tasks[i][0], tasks[i][1].result()))
+                    ress.append(
+                        (tasks[i][0], tasks[i][1].exception() or tasks[i][1].result())
+                    )
                     to_pop.append(i)
                 else:
                     not_finish += 1
@@ -131,5 +133,5 @@ if __name__ == "__main__":
 
     # rprint(sample_visit)
     # rprint(responses)
-    result = {w: r for w, r in zip(workloads, responses)}
-    rprint(result, file=open("tmp.txt", "w"))
+    result = [(w, r) for w, r in zip(workloads, responses)]
+    rprint(result, file=open("tmp_100.txt", "w"))
