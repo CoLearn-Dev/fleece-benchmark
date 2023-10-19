@@ -1,5 +1,5 @@
 import openai
-from typing import List, Dict
+from typing import AsyncGenerator, List, Dict
 from .api_protocol import ResPiece
 import logging
 
@@ -10,7 +10,7 @@ logger.setLevel(logging.WARNING)
 async def streaming_inference(
     dialog: List[Dict[str, str]],
     **kwargs,
-) -> ResPiece | Exception:
+):
     try:
         if "stream" in kwargs:
             kwargs.pop("stream")

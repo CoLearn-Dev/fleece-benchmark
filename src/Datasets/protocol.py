@@ -2,6 +2,7 @@ from typing import List, Dict, Tuple
 from attrs import define
 
 Offset = float | None
+NotNoneOffset = float
 ReqId = str
 VisitCtx = Dict[ReqId, str]
 
@@ -16,14 +17,15 @@ class OpenAIMessage:
         assert self.dep_id is None or self.dep_id in ctx
         return {
             "role": self.role,
-            "content": ctx.get(self.dep_id, self.content),
+            "content": self.content if self.dep_id is None else ctx.get(self.dep_id),
         }
+        
 
 
 @define
 class SimReq:
     id: ReqId
-    dep_id: ReqId  # this req needs to be executed after dep_id is finished
+    dep_id: ReqId|None  # this req needs to be executed after dep_id is finished
     # content
     messages_with_dep: List[OpenAIMessage]
 
@@ -52,4 +54,4 @@ class SimReq:
 
 
 Visit = List[Tuple[Offset, SimReq]]
-Workload = List[Tuple[Offset, Visit]]
+Workload = List[Tuple[NotNoneOffset, Visit]]

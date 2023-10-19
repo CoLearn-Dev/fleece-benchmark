@@ -1,8 +1,8 @@
 from typing import List, Tuple, Any
-from .protocol import Offset, Visit
+from .protocol import Offset, Visit, NotNoneOffset
 
 
-def key_timestamp_to_offset(x: List[Tuple[float, Any]]) -> List[Tuple[Offset, Any]]:
+def key_timestamp_to_offset(x: List[Tuple[float, Any]]) -> List[Tuple[NotNoneOffset, Any]]:
     x.sort(key=lambda v: v[0])
     return [(t - x[0][0], v) for (t, v) in x]
 
@@ -12,8 +12,9 @@ def assert_visit_is_legal(visit: Visit):
     id_pool = [req.id for (_, req) in visit]
 
     for t, req in visit:
-        assert t is None or t > last_t
-        last_t = t
+        if t is not None:
+            assert t > last_t
+            last_t = t
         assert req.dep_id is None or req.dep_id in id_pool
         for message in req.messages_with_dep:
             assert message.dep_id is None or message.dep_id in id_pool
