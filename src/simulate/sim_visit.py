@@ -17,8 +17,10 @@ async def sim_visit(visit: Visit, **kwargs) -> VisitResponse:
     ctx: VisitCtx = dict()
     responses: List[ReqResponseWithException] = []
     last_finish = None
-    HUMAN_INPUT_WPS = kwargs.pop("human_input_wps", 1.0)  # FIXME: set as a arg?
+    HUMAN_INPUT_WPS = kwargs.pop("human_input_wps", 1.0)
+    TIME_TOLERANCE = kwargs.pop("time_tolerance", 0.1)
     failed = False
+    logging.debug(f"<sim_visit>: launch visit sim, size of dialog {len(visit)}.")
     for scheduled_offest, sim_req in visit:
         try:
             launch_latency = 0.0
@@ -29,21 +31,25 @@ async def sim_visit(visit: Visit, **kwargs) -> VisitResponse:
             assert (
                 inference_conf["model"] is not None
             ), "<sim_visit>: model must be specified"
-            if last_finish is not None:
-                if scheduled_offest is not None:
-                    if last_finish + scheduled_offest - time.time() < 0:
-                        launch_latency = time.time() - last_finish - scheduled_offest
-                        logging.warning(
-                            f"Request {sim_req.id} cannot be executed in time."
-                        )
-                    else:
-                        await asyncio.sleep(
-                            last_finish + scheduled_offest - time.time()
-                        )
-                else:
-                    await asyncio.sleep(
-                        len(dialog[-1]["content"].split()) / HUMAN_INPUT_WPS
+            if scheduled_offest is not None:
+                scheduled_time = start_time + scheduled_offest
+                if scheduled_time - time.time() > -TIME_TOLERANCE:
+                    logging.debug(
+                        f"<{sim_req.id}>: wait for scheduled time, after {scheduled_time - time.time()}."
                     )
+                    await asyncio.sleep(scheduled_time - time.time())
+                else:
+                    logging.warning(
+                        f"<{sim_req.id}>: Request cannot be executed in time, {time.time() - scheduled_time} s late, launch immediately."
+                    )
+            elif last_finish is not None:
+                sim_time = len(dialog[-1]["content"].split()) / HUMAN_INPUT_WPS
+                logging.debug(
+                    f"<{sim_req.id}>: simulate human input, after {sim_time} s."
+                )
+                await asyncio.sleep(sim_time)
+            else:
+                logging.debug(f"<{sim_req.id}>: launch immediately.")
             start_time = time.time()
             logging.debug(f"<{sim_req.id}>: start inference.")
             if sim_req.stream:
@@ -74,6 +80,7 @@ async def sim_visit(visit: Visit, **kwargs) -> VisitResponse:
                 )
             )
         except Exception as e:
+            logging.warning("<sim_visit>: exception caught, visit failed.")
             responses.append((time.time(), e))
             failed = True
             break

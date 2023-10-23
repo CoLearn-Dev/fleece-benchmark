@@ -13,7 +13,7 @@ async def sim_workload_in_single_thread(
     """
     Simulate a workload and return the responses.
     """
-    TIME_TOLERANCE = kwargs.pop("time_tolerance", 0.1)
+    TIME_TOLERANCE = kwargs.get("time_tolerance", 0.1)
     SKIP_IDLE_MIN: float | None = kwargs.pop("skip_idle_min", None)
     if sim_start_time is None:
         logging.info(
@@ -105,22 +105,19 @@ async def sim_workload_in_single_thread(
 
 if __name__ == "__main__":
     from ..Datasets.arena import ArenaDataset
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(message)s",
-        datefmt="%m-%d %H:%M:%S",
-        handlers=[logging.FileHandler("tmp.log"), logging.StreamHandler()],
-    )
-
+    from ..Datasets.oasst1 import Oasst1Dataset
+    from ..setup_logger import setup_logger
     from rich import print as rprint
+
+    setup_logger(level=logging.DEBUG)
 
     conf = {
         "api_base": "http://3.14.115.113:8000/v1",
         "api_key": "EMPTY",
         "model": "vicuna-7b-v1.3",
     }
-    dataset = ArenaDataset()
+    # dataset = ArenaDataset()
+    dataset = Oasst1Dataset()
     workloads = dataset.to_workload()[:100]
     # offest = [0]+[w[0] for w in workloads]
     # offests_delta = [offest[i+1]-offest[i] for i in range(len(offest)-1)]
