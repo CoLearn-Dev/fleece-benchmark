@@ -1,45 +1,23 @@
 from attrs import define
-from typing import List, Tuple
-import numpy as np
+from typing import List
 
 
 @define
-class Report:
-    dataset_name: str
-    endpoint_model_name: str
-    time_usage: float
-    request_num: int  # FIXME: add request_failed_num?
-    time_usage_per_request: List[float]
-    first_res_latency: List[float]
+class RequestLevelReport:
+    request_num: int
+    fail_rate: float
 
-    def avg_latency(self):
-        return np.mean(self.first_res_latency)
-
-    def std_latency(self):
-        return np.std(self.first_res_latency)
-
-    def match_rate_for_latency(self, target_latency: float):
-        return (
-            np.sum(np.array(self.first_res_latency) <= target_latency)
-            / self.request_num
-        )
-
+    TTLB: List[float]  # Time To Last Byte
+    SLO: float  # Service Level Objective
+    time_per_request: List[float]
     token_per_request: List[int]
+    TPS: List[float]  # Tokens Per Second
+    tokenizer_name: str
 
-    def tps_per_request(self):
-        [
-            self.token_per_request[i] / self.time_usage_per_request[i]
-            for i in range(self.request_num)
-        ]
 
-    def avg_tps(self):
-        return np.mean(self.tps_per_request())
-
-    def std_tps(self):
-        return np.std(self.tps_per_request())
-
-    def match_rate_for_tps(self, target_tps: float):
-        return np.sum(np.array(self.tps_per_request) >= target_tps) / self.request_num
-
-    visit_total_num: int
-    visit_failed_num: int
+@define
+class VisitLevelReport:
+    visit_num: int
+    fail_rate: float
+    time_usage_per_visit: List[float]
+    request_level_report: RequestLevelReport

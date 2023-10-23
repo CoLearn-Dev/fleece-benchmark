@@ -19,13 +19,12 @@ class OpenAIMessage:
             "role": self.role,
             "content": self.content if self.dep_id is None else ctx.get(self.dep_id),
         }
-        
 
 
 @define
 class SimReq:
     id: ReqId
-    dep_id: ReqId|None  # this req needs to be executed after dep_id is finished
+    dep_id: ReqId | None  # this req needs to be executed after dep_id is finished
     # content
     messages_with_dep: List[OpenAIMessage]
 

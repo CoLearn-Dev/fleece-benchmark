@@ -1,5 +1,5 @@
-from typing import List, Tuple
-from .protocol import Workload, Visit, SimReq, OpenAIMessage
+from typing import List
+from .protocol import Workload, SimReq, OpenAIMessage
 from .utils import key_timestamp_to_offset
 from datetime import datetime
 

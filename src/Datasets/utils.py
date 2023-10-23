@@ -2,7 +2,9 @@ from typing import List, Tuple, Any
 from .protocol import Offset, Visit, NotNoneOffset
 
 
-def key_timestamp_to_offset(x: List[Tuple[float, Any]]) -> List[Tuple[NotNoneOffset, Any]]:
+def key_timestamp_to_offset(
+    x: List[Tuple[float, Any]]
+) -> List[Tuple[NotNoneOffset, Any]]:
     x.sort(key=lambda v: v[0])
     return [(t - x[0][0], v) for (t, v) in x]
 

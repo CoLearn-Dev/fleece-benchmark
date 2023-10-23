@@ -1,0 +1,2 @@
+class synthesizer:
+    raise NotImplementedError
