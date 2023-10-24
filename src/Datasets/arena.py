@@ -66,6 +66,15 @@ class ArenaDataset:
                 sum([parse_timestamped_visits(d) for d in self.raw["train"]], [])
             )
 
+    def dialogs(self) -> List[str]:
+        return sum(
+            [
+                [cc["content"] for cc in d["conversation_a"] if cc["role"] == "user"]
+                for d in self.raw["train"]
+            ],
+            [],
+        )
+
 
 if __name__ == "__main__":
     from rich import print as rprint

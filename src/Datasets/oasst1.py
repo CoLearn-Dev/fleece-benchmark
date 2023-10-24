@@ -25,7 +25,7 @@ class Oasst1Dataset:
             ]
         self.grouped_data = grouped_data
 
-    def to_workload(self, separate_ret_in_one_visit=False, **kargs) -> Workload:
+    def to_workload(self, separate_ret_in_one_visit=False, **kwargs) -> Workload:
         def get_prompter_id(cur_id):
             if cur_id == None:
                 return None
@@ -62,9 +62,9 @@ class Oasst1Dataset:
                 stream=True,
                 model=None,
                 n=1,
-                temperature=kargs.get("temperature", 1),
-                top_p=kargs.get("top_p", 1),
-                max_tokens=kargs.get("max_tokens", None),
+                temperature=kwargs.get("temperature", 1),
+                top_p=kwargs.get("top_p", 1),
+                max_tokens=kwargs.get("max_tokens", None),
             )
 
         if not separate_ret_in_one_visit:
@@ -102,6 +102,9 @@ class Oasst1Dataset:
                     if v["role"] == "prompter"
                 ]
             )
+
+    def dialogs(self) -> List[str]:
+        return [v["text"] for v in self.dicted_data.values() if v["role"] == "prompter"]
 
 
 if __name__ == "__main__":

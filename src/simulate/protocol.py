@@ -1,6 +1,6 @@
 from attrs import define
 from ..Datasets.protocol import ReqId
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 from ..API.api_protocol import ResPiece
 
 
@@ -9,17 +9,15 @@ class ReqResponse:
     req_id: ReqId
     start_timestamp: float
     end_timestamp: float
-    dialog: List[Dict[str, str]]
-    loggings: List[Tuple[float, ResPiece]]
+    dialog: List[Dict[str, str]] = []
+    loggings: List[Tuple[float, ResPiece]] = []
     launch_latency: float = 0.0
-
-
-ReqResponseWithException = ReqResponse | Tuple[float, BaseException]
+    error_info: Optional[Tuple[str, str]] = None  # (error message, traceback)
 
 
 @define
 class VisitResponse:
     start_timestamp: float
     end_timestamp: float
-    responses: List[ReqResponseWithException]
+    responses: List[ReqResponse]
     failed: bool = False

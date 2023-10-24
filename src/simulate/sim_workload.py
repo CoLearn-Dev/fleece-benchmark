@@ -33,7 +33,7 @@ async def sim_workload_in_single_thread(
     tasks: List[Tuple[int, asyncio.Task]] = list()
     ress: List[Tuple[int, VisitResponse]] = list()
 
-    TIME_STEP = kwargs.pop("time_step", TIME_TOLERANCE)
+    TIME_STEP = kwargs.pop("time_step", min(0.1, TIME_TOLERANCE))
     CHECK_SIZE = kwargs.pop("check_size", 10)
     start_timestamp = time.time()
     next_index = 0
@@ -48,9 +48,13 @@ async def sim_workload_in_single_thread(
             logging.debug(
                 f"next visit {next_index} scheduled at {workload[next_index][0]}"
             )
+            launch_imm = False
             if cur_offset - workload[next_index][0] > TIME_TOLERANCE:
-                logging.warning(f"visit {next_index} cannot be executed in time.")
-            if abs(cur_offset - workload[next_index][0]) < TIME_TOLERANCE:
+                logging.warning(
+                    f"visit {next_index} cannot be executed in time, late {cur_offset - workload[next_index][0]}."
+                )
+                launch_imm = True
+            if abs(cur_offset - workload[next_index][0]) < TIME_TOLERANCE or launch_imm:
                 logging.debug(f"launch visit {next_index}")
                 tasks.append(
                     (
@@ -61,8 +65,14 @@ async def sim_workload_in_single_thread(
                     )
                 )
                 next_index += 1
+                logging_next_time = (
+                    workload[next_index][0] if next_index < total_visit_num else None
+                )
+                logging_after = (
+                    (logging_next_time - cur_offset) if logging_next_time else None
+                )
                 logging.info(
-                    f"launch visit {next_index - 1} finished. next visit {next_index} scheduled at {workload[next_index][0] if next_index < total_visit_num else None}"
+                    f"launch visit {next_index - 1} finished. next visit {next_index} scheduled at {logging_next_time} after {logging_after}"
                 )
 
         # recycle finished tasks & check if system is idle & check if all visits are done

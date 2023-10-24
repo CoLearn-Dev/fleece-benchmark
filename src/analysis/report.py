@@ -2,6 +2,7 @@ from attrs import define
 from typing import List
 import numpy as np
 
+
 @define
 class RequestLevelReport:
     request_num: int
