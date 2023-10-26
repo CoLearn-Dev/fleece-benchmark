@@ -54,7 +54,7 @@ def RequestsStatus(req_ress: List[ReqResponse], path: str):
     plt.savefig(path)
 
 
-def TokenPerSecond(report: RequestLevelReport, path: str):
+def Throughput(report: RequestLevelReport, path: str):
     plt.clf()
     data: List[Tuple[float, int]] = report.token_timestamp
     start = data[0][0]
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         [],
     )
     RequestsStatus(loaded, f"tmp/rs_{name}.png")
-    TokenPerSecond(
+    Throughput(
         generate_request_level_report(loaded, "meta-llama/Llama-2-7b-chat-hf"),
-        f"tmp/tps_{name}.png",
+        f"tmp/tp_{name}.png",
     )
