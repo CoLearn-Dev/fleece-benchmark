@@ -1,5 +1,5 @@
 from attrs import define
-from typing import List
+from typing import List, Tuple
 import numpy as np
 
 
@@ -12,6 +12,7 @@ class RequestLevelReport:
     SLO: float  # Service Level Objective
     time_per_request: List[float]
     token_per_request: List[int]
+    token_timestamp: List[Tuple[float, int]]
     TPS: List[float]  # Tokens Per Second
     tokenizer_name: str
 

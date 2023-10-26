@@ -39,6 +39,7 @@ async def sim_workload_in_single_thread(
     next_index = 0
     total_visit_num = len(workload)
     skip_offset = 0
+    finish_num = 0
     while True:
         # launch new tasks
         cur_offset = time.time() - start_timestamp + skip_offset
@@ -81,7 +82,10 @@ async def sim_workload_in_single_thread(
             not_finish = 0
             for i in range(len(tasks[:CHECK_SIZE])):
                 if tasks[i][1].done():
-                    logging.info(f"visit {tasks[i][0]} done.")
+                    finish_num += 1
+                    logging.info(
+                        f"visit <{tasks[i][0]}> done. Total {finish_num} visits done."
+                    )
                     ress.append((tasks[i][0], tasks[i][1].result()))
                     to_pop.append(i)
                 else:

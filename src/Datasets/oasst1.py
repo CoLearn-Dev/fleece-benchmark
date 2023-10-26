@@ -1,6 +1,6 @@
 from typing import List
 from .protocol import Workload, SimReq, OpenAIMessage
-from .utils import key_timestamp_to_offset
+from .utils import key_timestamp_to_offset, cache
 from datetime import datetime
 
 
@@ -25,6 +25,7 @@ class Oasst1Dataset:
             ]
         self.grouped_data = grouped_data
 
+    @cache()
     def to_workload(self, separate_ret_in_one_visit=False, **kwargs) -> Workload:
         def get_prompter_id(cur_id):
             if cur_id == None:

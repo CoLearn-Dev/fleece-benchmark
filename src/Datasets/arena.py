@@ -1,6 +1,6 @@
 from typing import List, Tuple
 from .protocol import Workload, Visit, SimReq, OpenAIMessage
-from .utils import key_timestamp_to_offset
+from .utils import key_timestamp_to_offset, cache
 
 
 class ArenaDataset:
@@ -9,6 +9,7 @@ class ArenaDataset:
 
         self.raw = load_dataset("lmsys/chatbot_arena_conversations")
 
+    @cache()
     def to_workload(
         self, separate_req_in_one_visit_with_interval=None, **kargs
     ) -> Workload:
