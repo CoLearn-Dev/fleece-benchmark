@@ -5,12 +5,14 @@ from datetime import datetime
 
 
 class Oasst1Dataset:
-    def __init__(self):
+
+    @cache()
+    def load(self):
         from datasets import load_dataset
 
         raw = load_dataset("OpenAssistant/oasst1")
         merged_raw = list(raw["train"]) + list(raw["validation"])
-        self.dicted_data = {
+        dicted_data = {
             v["message_id"]: {
                 "timestamp": datetime.fromisoformat(v["created_date"]).timestamp(),
                 **v,
@@ -18,13 +20,17 @@ class Oasst1Dataset:
             for v in merged_raw
         }
         grouped_data = {}
-        for v in self.dicted_data.values():
+        for v in dicted_data.values():
             grouped_data[v["message_tree_id"]] = [
                 v,
                 *grouped_data.get(v["message_tree_id"], []),
             ]
-        self.grouped_data = grouped_data
+        return dicted_data, grouped_data
 
+
+    def __init__(self):
+        self.dicted_data, self.grouped_data = self.load()
+        
     @cache()
     def to_workload(self, separate_ret_in_one_visit=False, **kwargs) -> Workload:
         def get_prompter_id(cur_id):
@@ -111,7 +117,9 @@ class Oasst1Dataset:
 if __name__ == "__main__":
     from rich import print as rprint
     from .utils import assert_visit_is_legal
+    import time
 
+    start_time = time.time()
     ds = Oasst1Dataset()
     ds_workload = ds.to_workload()
     # rprint(ds.grouped_data['bebaaa50-9c9e-4fee-be15-1ff4d7efea8a'])
@@ -126,3 +134,4 @@ if __name__ == "__main__":
             break
     for d in ds_workload_sep:
         assert_visit_is_legal(d[1])
+    print(time.time() - start_time)

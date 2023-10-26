@@ -80,7 +80,9 @@ class ArenaDataset:
 if __name__ == "__main__":
     from rich import print as rprint
     from .utils import assert_visit_is_legal
+    import time
 
+    start_time = time.time()
     ds = ArenaDataset()
     ds_workload = ds.to_workload()
     rprint(ds_workload[0])
@@ -98,3 +100,4 @@ if __name__ == "__main__":
             break
     for d in ds_workload_sep:
         assert_visit_is_legal(d[1])
+    print(f"Time used: {time.time() - start_time}")

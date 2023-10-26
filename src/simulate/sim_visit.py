@@ -1,4 +1,4 @@
-from ..Datasets.protocol import Visit, VisitCtx
+from ..datasets.protocol import Visit, VisitCtx
 from .protocol import ReqResponse, VisitResponse
 from typing import List, Tuple
 from ..API.openai import streaming_inference
@@ -99,8 +99,8 @@ async def sim_visit(visit: Visit, **kwargs) -> VisitResponse:
 
 
 if __name__ == "__main__":
-    from ..Datasets.protocol import Visit, VisitCtx
-    from ..Datasets.arena import ArenaDataset
+    from ..datasets.protocol import Visit, VisitCtx
+    from ..datasets.arena import ArenaDataset
 
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"

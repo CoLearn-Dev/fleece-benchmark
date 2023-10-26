@@ -1,5 +1,5 @@
 from .sim_visit import sim_visit
-from ..Datasets.protocol import Workload
+from ..datasets.protocol import Workload
 from .protocol import VisitResponse
 import asyncio
 from typing import List, Tuple
@@ -118,8 +118,8 @@ async def sim_workload_in_single_thread(
 
 
 if __name__ == "__main__":
-    from ..Datasets.arena import ArenaDataset
-    from ..Datasets.oasst1 import Oasst1Dataset
+    from ..datasets.arena import ArenaDataset
+    from ..datasets.oasst1 import Oasst1Dataset
     from ..setup_logger import setup_logger
     from rich import print as rprint
 

@@ -1,6 +1,6 @@
-from src.Datasets.arena import ArenaDataset
-from src.Datasets.oasst1 import Oasst1Dataset
-from src.Datasets.synthesizer import SynthesizerDataset
+from src.datasets.arena import ArenaDataset
+from src.datasets.oasst1 import Oasst1Dataset
+from src.datasets.synthesizer import SynthesizerDataset
 from src.simulate.sim_workload import sim_workload_in_single_thread
 import logging
 from src.setup_logger import setup_logger

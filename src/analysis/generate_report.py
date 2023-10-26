@@ -82,9 +82,9 @@ def generate(
 
 
 if __name__ == "__main__":
-    from ..Datasets.arena import ArenaDataset
-    from ..Datasets.oasst1 import Oasst1Dataset
-    from ..Datasets.synthesizer import SynthesizerDataset
+    from ..datasets.arena import ArenaDataset
+    from ..datasets.oasst1 import Oasst1Dataset
+    from ..datasets.synthesizer import SynthesizerDataset
     from ..simulate.sim_workload import sim_workload_in_single_thread
     import logging
     from ..setup_logger import setup_logger
