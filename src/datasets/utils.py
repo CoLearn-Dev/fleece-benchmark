@@ -1,5 +1,6 @@
 from typing import List, Tuple, Any
-from .protocol import Offset, Visit, NotNoneOffset
+from .protocol import Visit, NotNoneOffset
+import logging
 
 
 def key_timestamp_to_offset(
@@ -50,9 +51,11 @@ def cache(enable=True, root_dir="tmp/"):
                 f"{args[0].__class__.__name__}_{f.__name__}_{args[1:]}_{kwargs}",
             )
             if os.path.exists(cache_path):
+                logging.info(f"Cache hit: {cache_path}")
                 with open(cache_path, "rb") as fi:
                     return pickle.load(fi)
             else:
+                logging.info(f"Cache miss: {cache_path}")
                 ret = f(*args, **kwargs)
                 with open(cache_path, "wb") as fi:
                     pickle.dump(ret, fi)
