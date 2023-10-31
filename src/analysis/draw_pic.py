@@ -4,6 +4,7 @@ from src.analysis.generate_report import generate_request_level_report
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
+import bisect
 
 
 def RequestsStatus(req_ress: List[ReqResponse], path: str):
@@ -54,22 +55,21 @@ def RequestsStatus(req_ress: List[ReqResponse], path: str):
     plt.savefig(path)
 
 
-def Throughput(report: RequestLevelReport, path: str):
+def Throughput(report: RequestLevelReport, path: str, **kwargs):
     plt.clf()
     data: List[Tuple[float, int]] = report.token_timestamp
     start = data[0][0]
     end = data[-1][0]
-    time_step = 1
-    half_window_size = 7
+    time_step = kwargs.get("time_step", 1)
+    window_size = kwargs.get("window_size", 5)
     x = np.arange(0, end - start, time_step)
-    y_ori = np.zeros(len(x))
-    for t, n in data:
-        y_ori[int((t - start) / time_step)] += n
     y = np.zeros(len(x))
     for i in range(len(y)):
-        y[i] = sum(
-            y_ori[max(0, i - half_window_size) : min(len(y_ori), i + half_window_size)]
-        ) / (2 * half_window_size + 1)
+        ty = start + i * time_step
+        y[i] = bisect.bisect_right(
+            data, ty + window_size / 2, key=lambda x: x[0]
+        ) - bisect.bisect_left(data, ty - window_size / 2, key=lambda x: x[0])
+    y = y / window_size
     plt.plot(x, y)
     plt.xlabel("time (s)")
     plt.ylabel("number of tokens")
@@ -79,7 +79,7 @@ def Throughput(report: RequestLevelReport, path: str):
 if __name__ == "__main__":
     import pickle
 
-    name = "single_request"
+    name = "line_10s_70b_oct27"
     loaded: List[ReqResponse] = sum(
         [v.responses for v in pickle.load(open(f"tmp/responses_{name}.pkl", "rb"))],
         [],

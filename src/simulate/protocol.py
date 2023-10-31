@@ -1,5 +1,5 @@
 from attrs import define
-from ..datasets.protocol import ReqId
+from ..workload_datasets.protocol import ReqId
 from typing import List, Tuple, Dict, Optional
 from ..API.api_protocol import ResPiece
 

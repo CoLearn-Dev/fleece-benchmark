@@ -5,7 +5,6 @@ from datetime import datetime
 
 
 class Oasst1Dataset:
-
     @cache()
     def load(self):
         from datasets import load_dataset
@@ -27,10 +26,9 @@ class Oasst1Dataset:
             ]
         return dicted_data, grouped_data
 
-
     def __init__(self):
         self.dicted_data, self.grouped_data = self.load()
-        
+
     @cache()
     def to_workload(self, separate_ret_in_one_visit=False, **kwargs) -> Workload:
         def get_prompter_id(cur_id):

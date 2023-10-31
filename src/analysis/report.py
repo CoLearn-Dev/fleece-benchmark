@@ -8,27 +8,30 @@ class RequestLevelReport:
     request_num: int
     fail_rate: float
 
-    TTLB: List[float]  # Time To Last Byte
+    TTFT: List[float]  # Time To First Token (TTFT)
+    latency: List[float] # Time cost from request to last response
     SLO: float  # Service Level Objective
     time_per_request: List[float]
     token_per_request: List[int]
     token_timestamp: List[Tuple[float, int]]
-    TPS: List[float]  # Tokens Per Second
+    TPOT: List[float]  # Time Per Output Token (avg for each request)
+    Throughput: float
     tokenizer_name: str
 
     def show_as_dict(self):
         return {
             "request_num": self.request_num,
             "fail_rate": self.fail_rate,
-            "TTLB": {
-                "avg": np.mean(self.TTLB),
-                "std": np.std(self.TTLB),
+            "TTFT": {
+                "avg": np.mean(self.TTFT),
+                "std": np.std(self.TTFT),
             },
             "SLO": self.SLO,
-            "TPS": {
-                "avg": np.mean(self.TPS),
-                "std": np.std(self.TPS),
+            "TPOT": {
+                "avg": np.mean(self.TPOT),
+                "std": np.std(self.TPOT),
             },
+            "Throughput": self.Throughput,
         }
 
     def visualize(self):

@@ -1,4 +1,4 @@
-from ..datasets.protocol import Visit, VisitCtx
+from ..workload_datasets.protocol import Visit, VisitCtx
 from .protocol import ReqResponse, VisitResponse
 from typing import List, Tuple
 from ..API.openai import streaming_inference
@@ -24,7 +24,6 @@ async def sim_visit(visit: Visit, **kwargs) -> VisitResponse:
         launch_latency = 0.0
         dialog = sim_req.messages(ctx)
         res_loggings: List[Tuple[float, ResPiece]] = []
-        ret_str = None
         inference_conf = sim_req.shadow_params(**kwargs)
         if scheduled_offest is not None:
             scheduled_time = visit_start_time + scheduled_offest
@@ -45,6 +44,7 @@ async def sim_visit(visit: Visit, **kwargs) -> VisitResponse:
             logging.debug(f"<{sim_req.id}>: launch immediately.")
         req_start_time = time.time()
         logging.debug(f"<{sim_req.id}>: start inference.")
+        ret_str = ""
         try:
             assert (
                 inference_conf["model"] is not None
@@ -85,6 +85,8 @@ async def sim_visit(visit: Visit, **kwargs) -> VisitResponse:
                     req_id=sim_req.id,
                     start_timestamp=req_start_time,
                     end_timestamp=time.time(),
+                    dialog=dialog + [{"role": "assitant", "content": ret_str}],
+                    loggings=res_loggings,
                     launch_latency=launch_latency,
                     error_info=(str(e), traceback.format_exc()),
                 )
@@ -99,8 +101,8 @@ async def sim_visit(visit: Visit, **kwargs) -> VisitResponse:
 
 
 if __name__ == "__main__":
-    from ..datasets.protocol import Visit, VisitCtx
-    from ..datasets.arena import ArenaDataset
+    from ..workload_datasets.protocol import Visit, VisitCtx
+    from ..workload_datasets.arena import ArenaDataset
 
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"

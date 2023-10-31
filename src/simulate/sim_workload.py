@@ -1,5 +1,5 @@
 from .sim_visit import sim_visit
-from ..datasets.protocol import Workload
+from ..workload_datasets.protocol import Workload
 from .protocol import VisitResponse
 import asyncio
 from typing import List, Tuple
@@ -84,7 +84,7 @@ async def sim_workload_in_single_thread(
                 if tasks[i][1].done():
                     finish_num += 1
                     logging.info(
-                        f"visit <{tasks[i][0]}> done. Total {finish_num} visits done."
+                        f"visit <{tasks[i][0]}> done. Total {finish_num}/{total_visit_num} visits done."
                     )
                     ress.append((tasks[i][0], tasks[i][1].result()))
                     to_pop.append(i)
@@ -118,8 +118,8 @@ async def sim_workload_in_single_thread(
 
 
 if __name__ == "__main__":
-    from ..datasets.arena import ArenaDataset
-    from ..datasets.oasst1 import Oasst1Dataset
+    from ..workload_datasets.arena import ArenaDataset
+    from ..workload_datasets.oasst1 import Oasst1Dataset
     from ..setup_logger import setup_logger
     from rich import print as rprint
 
