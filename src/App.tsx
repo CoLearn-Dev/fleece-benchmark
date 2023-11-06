@@ -10,13 +10,19 @@ import {
   ClockCircleOutlined,
   SendOutlined,
   UnorderedListOutlined,
-  ShareAltOutlined,
+  DownloadOutlined,
+  StarOutlined,
+  HomeOutlined,
+  HistoryOutlined,
+  GithubOutlined,
+  BugOutlined,
 } from '@ant-design/icons';
-import { List, Image, Descriptions, Breadcrumb, Layout, Menu, theme, Button, Select, Switch, Form, Input, Space, Card, Row, Col, InputNumber, Slider, notification, Typography, Modal, } from 'antd';
+import { Statistic, Flex, List, Image, Descriptions, Breadcrumb, Layout, Menu, theme, Button, Select, Switch, Form, Input, Space, Card, Row, Col, InputNumber, Slider, notification, Typography, Modal, } from 'antd';
 import type { DescriptionsProps } from 'antd';
 import { Line, Gauge } from '@antv/g2plot';
 import axios from 'axios';
-const { TextArea, Search } = Input;
+const { Title, Paragraph, Text, Link } = Typography;
+const { TextArea } = Input;
 const { Option } = Select;
 
 const { Content, Footer, Sider } = Layout;
@@ -30,6 +36,7 @@ const str_to_placeholder = (s: string, placeholder: string, mark_value: string =
 
 const App: React.FC = () => {
   const [test_id, setTestId] = useState<string>('null');
+  const [nickname, setNickname] = useState<string>('');
   const [test_config, setTestConfig] = useState<any>({});
   const [test_status, setTestStatus] = useState<string>('null');
   const [model, setModel] = useState<string>('null');
@@ -75,11 +82,22 @@ const App: React.FC = () => {
   }
   const [backend_url, setBackendUrl] = useState<string>('http://52.10.162.207:8000');
 
-  const [activeBodyKey, setactiveBodyKey] = useState<string>('body1');
+  const [activeBodyKey, setactiveBodyKey] = useState<string>('body0');
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
+  const change_nick_name = () => {
+    axios.get(backend_url + "/set_nickname/" + test_id + "?nickname=" + nickname).then(function (response) {
+      console.log("set nickname success", response.data);
+      api.success({
+        message: 'Set nickname success',
+        description: 'Your nickname has been set',
+      });
+    }).catch(function (error) {
+      console.log(error);
+    });
+  }
 
   const [api, contextHolder] = notification.useNotification();
   const [url_header, setUrlHeader] = useState<string>('http://');
@@ -130,6 +148,7 @@ const App: React.FC = () => {
       model = values.model_custom;
     }
     setModel(model);
+    
 
     const pack = {
       "url": url_header + values.url + "/v1",
@@ -137,7 +156,7 @@ const App: React.FC = () => {
       "dataset_name": values.dataset,
       "key": values.key,
       "dataset_config": dataset_config,
-      "workload_range": values.workload_range,
+      "workload_range": [minValue, maxValue],
       "kwargs": {
         "temperature": values.temperature,
         "top_p": values.top_p,
@@ -158,6 +177,7 @@ const App: React.FC = () => {
     setTpsHis([]);
     setTpsData(0.0);
     setTestConfig(pack);
+    setNickname("");
     // send request to backend
     axios.post(backend_url + '/register_and_start_test', pack).then(function (response) {
       console.log("post success", response.data);
@@ -318,19 +338,19 @@ const App: React.FC = () => {
             <Card title="Metrics">
               <Descriptions bordered items={metrics_items} />
             </Card>
-            <Space>
+            <Flex justify="space-evenly">
               <Card title="Throughput">
                 {throughput_pic}
               </Card>
               <Card title="Requests Status">
                 {requests_status_pic}
               </Card>
-            </Space>
+            </Flex>
             <Card title="Config">
-              <Space direction="vertical">
+              <Space direction="vertical" style={{ display: 'flex' }}>
                 <Descriptions bordered items={config_metrics_items} />
                 <Button type="dashed" block onClick={(e: any)=>{launch_new_benchmark(test_config)}}>
-                  launch a new benchmark with this config
+                  rerun benchmark with this config
                 </Button>
               </Space>
             </Card>
@@ -352,6 +372,9 @@ const App: React.FC = () => {
   const gauge_max_ref = useRef(gauge_max);
   const [line_tps, setLineTps] = useState<null | Line>(null);
   const line_tps_ref = useRef(line_tps);
+  const [total_req, setTotalReq] = useState<number>(0);
+  const [finished_req, setFinishedReq] = useState<number>(0);
+  const [failed_req, setFailedReq] = useState<number>(0);
   useEffect(() => {
     line_tps_ref.current = line_tps;
   }, [line_tps]);
@@ -368,6 +391,15 @@ const App: React.FC = () => {
     const IntervalId = setInterval(() => {
       if (test_id !== "null" && test_status_ref.current === "running") {
         axios.get(backend_url + "/trace/status/" + test_id).then(function (response) {
+          for (const [key, value] of Object.entries(response.data)) {
+            if ((value as any).status === "total") {
+              setTotalReq((value as any).number);
+            }else if ((value as any).status === "finish") {
+              setFinishedReq((value as any).number);
+            }else if ((value as any).status === "failed") {
+              setFailedReq((value as any).number);
+            }
+          }
           setStatData(prev => [...prev, ...response.data]);
           // if (stat_data_ref.current.length > 100) {
           //   setStatData(prev => prev.slice(1));
@@ -469,7 +501,6 @@ const App: React.FC = () => {
           tps_gauge_ref.current.changeData(tps_data_ref.current / gauge_max_ref.current);
         }
         if (line_tps_ref.current === null) {
-          // TODO
           const line = new Line('tps_graph', {
             data: tps_his_ref.current,
             xField: 'timestamp',
@@ -493,7 +524,7 @@ const App: React.FC = () => {
       } else {
         clearInterval(IntervalId);
       }
-    }, 1000);
+    }, 500);
     return () => clearInterval(IntervalId);
   }, [test_status, reload_config]);
 
@@ -549,6 +580,9 @@ const App: React.FC = () => {
         <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
           <div className="demo-logo-vertical" />
           <Menu theme="dark" mode="inline" selectedKeys={[activeBodyKey]}>
+          <Menu.Item key="body0" icon={<HomeOutlined />} onClick={(e: any) => { setactiveBodyKey(e.key); }}>
+              Home page
+            </Menu.Item>
             <Menu.Item key="body1" icon={<DashboardOutlined />} onClick={(e: any) => { setactiveBodyKey(e.key); }}>
               Launch new
             </Menu.Item>
@@ -563,7 +597,7 @@ const App: React.FC = () => {
         </Sider>
         <Layout>
           <Content style={{ margin: '0 16px' }}>
-            <div hidden={test_id==="null"}>
+            <div hidden={test_status!=="running" && test_status!=="init" && test_status!=="pending"}>
               <Breadcrumb style={{ margin: '16px 0' }}>
                 <Breadcrumb.Item>Testcase</Breadcrumb.Item>
                 <Breadcrumb.Item>{test_id}</Breadcrumb.Item>
@@ -571,18 +605,73 @@ const App: React.FC = () => {
               </Breadcrumb>
             </div>
             <div style={{ padding: 24, minHeight: 360, background: colorBgContainer }}>
+              <div hidden={activeBodyKey !== "body0"}>
+                <Space direction="vertical" style={{ display: 'flex' }}>
+                  <Card title={"Introduction"}>
+                    <Typography>
+                      <Title>LLM Serving Speed Test</Title>
+                      <Title level={2}>Description</Title>
+                      <Paragraph>
+                      This tool provides a benchmark tool for evaluating the inference speed for any LLM serving endpoint (currently supports <Link href="https://platform.openai.com/docs/api-reference/chat/create">OpenAI Chat Completion API</Link>). 
+                      It includes evaluations of the endpoint's performance and stability and can provide reports including many import metrics, such as:
+                      <ul>
+                        <li>the throughput (total TPS for the whole endpoint)</li>
+                        <li>request-level-TPS (for each request, the user can see how many tokens per second)</li>
+                        <li>TTFT (Time To First Token for each request)</li>
+                        <li>TPOT (Time Per Output Token for each request)</li>
+                      </ul>
+                      You can analyze the ability of your system in many aspects through these metrics. What's more, our benchmark tool also provides workloads from the real world and offers an easy-to-use interface to customize workloads.
+                      </Paragraph>
+                      <Title level={2}>Try our benchmark now!</Title>
+                      <Flex justify='space-around' align='center'>
+                        <Button type="default" icon={<RocketOutlined />} size='large' onClick={(e)=>{setactiveBodyKey('body1')}}>
+                          Launch a new speed test
+                        </Button>
+                        <Button type="default" icon={<HistoryOutlined />} size='large' onClick={(e)=>{setactiveBodyKey('body3')}}>
+                          Review previous tests
+                        </Button>
+                        <Button type="default" icon={<GithubOutlined />} size='large' onClick={(e)=>{window.open("https://github.com/CoLearn-Dev/fleece-benchmark")}}>
+                          Check our GitHub repo
+                        </Button>
+                        <Button type="default" icon={<BugOutlined />} size='large' onClick={(e)=>{window.open("https://github.com/CoLearn-Dev/fleece-benchmark/issues/new")}}>
+                          Submit an issue
+                        </Button>
+                      </Flex>
+                      <Title level={2}>Use self-host backend</Title>
+                      As an open-source project, you can setup your self-host benchmark backend. You just need to follow these steps:
+                      <ul>
+                        <li>Step 1: clone our <Link href="https://github.com/CoLearn-Dev/fleece-benchmark">repo</Link> with <pre>git clone https://github.com/CoLearn-Dev/fleece-benchmark.git</pre></li>
+                        <li>Step 2: setup python environment <pre>pip install -r requentment.txt</pre></li>
+                        <li>Step 3: create the dir for data <pre>mkdir tmp</pre></li>
+                        <li>Step 4: start the api_server of backend <pre>python -m src.api_server.app</pre></li>
+                        <li>Step 5: start the worker of backend <pre>python -m src.api_server.worker</pre></li>
+                        <li>Step 6: configure the url of your backend here:
+                          <Space.Compact style={{ width: '100%' }} size="large">
+                            <Input addonBefore="http://" 
+                              value={input_backend_url} 
+                              onChange={(e: any)=>{setInputBackendUrl(e.target.value)}}
+                              placeholder="input the url of benchmark endpoint" 
+                              onPressEnter={(e)=>(setBackendUrl('http://'+input_backend_url))}/>
+                            <Button type="primary" onClick={(e)=>(setBackendUrl('http://'+input_backend_url))}>Set</Button>
+                          </Space.Compact>
+                        </li>
+                      </ul>
+                    </Typography>
+                  </Card>
+                  <Card title={"Screenshots"}>
+                    <Flex justify='space-between'>
+                    <Card
+                      hoverable
+                      cover={<img alt="example" src="" />}
+                    >
+                      <Card.Meta title="Launch a new test with highly customizable workloads" description="" />
+                    </Card>
+                    </Flex>
+                  </Card>
+                </Space>
+              </div>
               <div hidden={activeBodyKey !== "body1"}>
                 <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-                  <Card title="Benchmark backend url">
-                    <Space.Compact style={{ width: '100%' }} size="large">
-                      <Input addonBefore="http://" 
-                        value={input_backend_url} 
-                        onChange={(e: any)=>{setInputBackendUrl(e)}}
-                        placeholder="input the url of benchmark endpoint" 
-                        onPressEnter={(e)=>(setBackendUrl('http://'+input_backend_url))}/>
-                      <Button type="primary" onClick={(e)=>(setBackendUrl('http://'+input_backend_url))}>Set</Button>
-                    </Space.Compact>
-                  </Card>
                   <Card
                     style={{ width: '100%' }}
                     title="Config your benchmark test"
@@ -607,7 +696,7 @@ const App: React.FC = () => {
                         <Input addonBefore="http://"/>
                       </Form.Item> */}
                       <Form.Item
-                        label="endpoint url"
+                        label="endpoint url (e.g. url for OpenAI API: https://api.openai.com/v1)"
                         name="url"
                         rules={[{ required: true, message: 'Please input your endpoint url!' }]}
                       >
@@ -636,7 +725,7 @@ const App: React.FC = () => {
                         </Select>
                       </Form.Item>
                       <Form.Item
-                        label="model"
+                        label="custom model name"
                         name="model_custom"
                         hidden={!costum_model}
                       >
@@ -813,13 +902,21 @@ const App: React.FC = () => {
               </div>
               <div hidden={activeBodyKey !== "body2"}>
                 <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-                  <Card title="Task to monitor">
-                    <Space.Compact style={{ width: '100%' }} size="large">
-                      <Input prefix={<SendOutlined />} value={id_to_show(set_dashboard_id)} placeholder="input the id of the task you want to monitor" 
-                        onChange={(e: any) => { setSetDashboardId(e.target.value) }}
-                        onPressEnter={(e: any) => { setTestId(e.target.value); setLoading(true); setReloadConfig(true);}}/>
-                      <Button type="primary" loading={loading} onClick={(e: any) => { setTestId(set_dashboard_id); setLoading(true); setReloadConfig(true);}}>Load</Button>
+                  <Card title="Test to monitor">
+                    <Space direction="vertical" style={{ display: 'flex' }}>
+                      <Space.Compact style={{ width: '100%' }} size="large">
+                        <Input addonBefore={<><SendOutlined /> test id</>} value={id_to_show(set_dashboard_id)} placeholder="input the id of the test you want to monitor" 
+                          onChange={(e: any) => { setSetDashboardId(e.target.value) }}
+                          onPressEnter={(e: any) => { setTestId(e.target.value); setLoading(true); setReloadConfig(true);}}/>
+                        <Button type="primary" loading={loading} onClick={(e: any) => { setTestId(set_dashboard_id); setLoading(true); setReloadConfig(true);}}>Load</Button>
+                      </Space.Compact>
+                      <Space.Compact style={{ width: '100%' }} size="large">
+                      <Input addonBefore={<><StarOutlined /> nickname</>} value={nickname} placeholder="you can set nick name for the test" 
+                        onChange={(e: any) => { setNickname(e.target.value) }}
+                        onPressEnter={(e: any) => { change_nick_name()}}/>
+                      <Button type="primary" disabled={loading} onClick={(e: any) => { change_nick_name()}}>Set</Button>
                     </Space.Compact>
+                    </Space>
                   </Card>
                     <Card
                       hidden={test_status !== "running"}
@@ -836,11 +933,20 @@ const App: React.FC = () => {
                             </Row>
                           </Card>
                           <Card title="Requests Status">
-                            <div id="req_stat_graph"></div>
+                            <Row>
+                                <Col span={8}>
+                                <Space direction="vertical" size={"large"} style={{ display: 'flex' }}>
+                                  <Card ><Statistic title="Issued requests" value={total_req}/></Card>
+                                  <Card ><Statistic title="Finished requests" value={finished_req}/></Card>
+                                  <Card ><Statistic title="Failed requests" value={failed_req}/></Card>
+                                </Space>
+                                </Col>
+                                <Col span={16}><div id="req_stat_graph"></div></Col>
+                            </Row>
                           </Card>
                         </Space>
                     </Card>
-                  <Card title={get_report_title()} hidden={test_status !== "finish"}>
+                  <Card title={get_report_title()} hidden={test_status !== "finish"} extra={<Button href={backend_url+"/report/download/"+test_id} type="primary" shape="round" icon={<DownloadOutlined />} size={"large"}/>}>
                     {report_body}
                   </Card>
                 </Space>
@@ -861,9 +967,9 @@ const App: React.FC = () => {
                   <List.Item>
                     <List.Item.Meta
                       title={<>{index}. <a onClick={(e: any)=>{
-                        setTestId(item[0]); setLoading(true); setReloadConfig(true); setactiveBodyKey("body2"); 
-                      }}>ID: {item}</a></>}
-                      description={"launch time: "+item[1]}
+                        setTestId(item[0]); setNickname(item[1]);setLoading(true); setReloadConfig(true); setactiveBodyKey("body2"); 
+                      }}>{item[1]!==""?item[1]:item[0]}</a></>}
+                      description={"launch time: "+item[2]+" id: "+item[0]}
                     />
                   </List.Item>
                 )}

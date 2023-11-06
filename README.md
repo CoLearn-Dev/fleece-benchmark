@@ -1,2 +1,2 @@
-# Fleece-benchmark
-A benchmark framework for LLM serving performance, based on API call
+# Fleece-benchmark WebUI
+A WebUI built with react and antd for [fleece-benchmark](https://github.com/CoLearn-Dev/fleece-benchmark/tree/main).
