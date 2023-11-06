@@ -30,7 +30,7 @@ class Oasst1Dataset:
         self.dicted_data, self.grouped_data = self.load()
 
     @cache()
-    def to_workload(self, separate_ret_in_one_visit=False, **kwargs) -> Workload:
+    def to_workload(self, separate_req_in_one_visit=False, **kwargs) -> Workload:
         def get_prompter_id(cur_id):
             if cur_id == None:
                 return None
@@ -49,10 +49,10 @@ class Oasst1Dataset:
                     OpenAIMessage(
                         role="user" if cur_req["role"] == "prompter" else "assistant",
                         content=cur_req["text"]
-                        if cur_req["role"] == "prompter" or separate_ret_in_one_visit
+                        if cur_req["role"] == "prompter" or separate_req_in_one_visit
                         else None,
                         dep_id=None
-                        if cur_req["role"] == "prompter" or separate_ret_in_one_visit
+                        if cur_req["role"] == "prompter" or separate_req_in_one_visit
                         else get_prompter_id(cur_req["parent_id"]),
                     )
                 ]
@@ -61,7 +61,7 @@ class Oasst1Dataset:
             return SimReq(
                 id=f"oasst1-{cur_id}",
                 dep_id=get_prompter_id(cur_req["parent_id"])
-                if not separate_ret_in_one_visit
+                if not separate_req_in_one_visit
                 else None,
                 messages_with_dep=get_messages(cur_id),
                 stream=True,
@@ -72,7 +72,7 @@ class Oasst1Dataset:
                 max_tokens=kwargs.get("max_tokens", None),
             )
 
-        if not separate_ret_in_one_visit:
+        if not separate_req_in_one_visit:
 
             def get_visit_start_time(group):
                 for v in group:
@@ -120,11 +120,12 @@ if __name__ == "__main__":
     start_time = time.time()
     ds = Oasst1Dataset()
     ds_workload = ds.to_workload()
+    print(len(ds_workload))
     # rprint(ds.grouped_data['bebaaa50-9c9e-4fee-be15-1ff4d7efea8a'])
     rprint(ds_workload[1])
     for d in ds_workload:
         assert_visit_is_legal(d[1])
-    ds_workload_sep = ds.to_workload(separate_ret_in_one_visit=True)
+    ds_workload_sep = ds.to_workload(separate_req_in_one_visit=True)
     rprint(ds_workload_sep[0])
     for d in ds_workload_sep:
         if len(d[1][0][1].messages_with_dep) > 1:

@@ -4,9 +4,13 @@ from typing import List
 import numpy as np
 import bisect
 
-def __get_tokens(s: str, tokenizer_name: str) -> int:
-    if "llama" in tokenizer_name:
+def count_tokens_from_str(s: str, tokenizer_name: str) -> int:
+    if "llama" in tokenizer_name or "Llama" in tokenizer_name:
         return 1
+    elif "gpt" in tokenizer_name:
+        import tiktoken
+        enc = tiktoken.encoding_for_model(tokenizer_name)
+        return len(enc.encode(s))
     else:
         try:
             from transformers import AutoTokenizer
@@ -23,6 +27,7 @@ def generate_request_level_report(
     ress: List[ReqResponse], tokenizer_name: str, **kwargs
 ) -> RequestLevelReport:
     success = [res for res in ress if res.error_info is None]
+    assert len(success) > 0, "all requests failed, cannot generate report."
     TTLB = [res.loggings[0][0] - res.start_timestamp for res in success]
     start_on_time = [res.launch_latency == 0.0 for res in success]
     time_per_request = [res.end_timestamp - res.start_timestamp for res in success]
@@ -33,7 +38,7 @@ def generate_request_level_report(
         for pack in c.loggings:
             if not pack[1].content:
                 continue
-            num = __get_tokens(pack[1].content, tokenizer_name)
+            num = count_tokens_from_str(pack[1].content, tokenizer_name)
             count += num
             token_timestamp.append((pack[0], num))
         if c.error_info is None:

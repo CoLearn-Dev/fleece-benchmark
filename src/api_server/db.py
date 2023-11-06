@@ -3,13 +3,15 @@ import os
 from .protocols import TestConfig
 from uuid import uuid4
 from typing import List, Tuple
+import time
+import datetime
 
 db_path = "tmp/api_server.db"
 
 if not os.path.exists(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("CREATE TABLE test (id text, config text, status text)")
+    cursor.execute("CREATE TABLE test (id text, config text, status text, model text, start_timestamp text)")
     cursor.execute("CREATE TABLE error (id text, error_info text)")
     conn.commit()
 
@@ -20,12 +22,47 @@ def report_error(id: str, error_info: str):
     cursor.execute("UPDATE test SET status=? WHERE id=?", ("error", id))
     conn.commit()
 
+# return a list of (id, timestamp) from latest to oldest, timestamp is a string in format %Y-%m-%d %H:%M:%S
+def get_id_list() -> List[str]:
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, start_timestamp FROM test ORDER BY start_timestamp DESC")
+    return [(id, datetime.datetime.fromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")) for id, timestamp in cursor.fetchall()]
+
+def query_error_info(id: str) -> str:
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT error_info FROM error WHERE id=?", (id,))
+    error_info = cursor.fetchone()
+    if error_info is None:
+        return f"{id} has no error"
+    return error_info[0]
+
+def query_model(id: str) -> str:
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT model FROM test WHERE id=?", (id,))
+    model = cursor.fetchone()
+    if model is None:
+        return ""
+    return model[0]
+
+def query_config(id: str) -> TestConfig:
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT config FROM test WHERE id=?", (id,))
+    config = cursor.fetchone()
+    if config is None:
+        return None
+    return TestConfig.model_validate_json(config[0])
+
 def save_config(config: TestConfig) -> str:
     id = str(uuid4())
+    model = config.model
     config_str = config.model_dump_json()
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO test VALUES (?, ?, ?)", (id, config_str, "init"))
+    cursor.execute("INSERT INTO test VALUES (?, ?, ?, ?, ?)", (id, config_str, "init", model, str(int(time.time()))))
     conn.commit()
     return id
 
@@ -49,7 +86,7 @@ def set_test_to_pending(id: str) -> str:
     status = query_test_status(id)
     if status is None:
         return f"Cannot find test {id}"
-    if status[0] == "running":
+    if status == "running":
         return f"Test {id} is already running"
     return set_status(id, "pending")
 

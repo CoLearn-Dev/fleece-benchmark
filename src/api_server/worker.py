@@ -20,14 +20,15 @@ from ..simulate.protocol import ReqResponse
 from ..analysis.draw_pic import RequestsStatus, Throughput
 
 def run_with_config(id: str, config: TestConfig):
-    set_status(id, "running")
     try:
-        dataset = dataset_dict[config.dataset_name](**config.dataset_config)
         if config.dataset_name == "synthesizer":
+            source = dataset_dict[config.dataset_config.pop("prompt_source")]().dialogs()
+            dataset = dataset_dict[config.dataset_name](source)
             func = config.dataset_config.pop("func")
             lambda_func = eval(func)
             workload = dataset.to_workload(workload_generator=lambda_func, **config.dataset_config)
         else:
+            dataset = dataset_dict[config.dataset_name]()
             workload = dataset.to_workload(**config.dataset_config)
         workload = workload[config.workload_range[0]:config.workload_range[1]]
         run_config = {
@@ -39,7 +40,7 @@ def run_with_config(id: str, config: TestConfig):
         logging.info(f"start {id}, size {len(workload)}")
         raw_result = asyncio.run(
                 sim_workload_in_single_thread(
-                    workload, None, **run_config
+                    workload, None, id, **run_config
                 )
             )
         pickle.dump(
@@ -51,13 +52,15 @@ def run_with_config(id: str, config: TestConfig):
             )
         logging.info("start generate reports")
         report = generate_request_level_report(responses, config.model)
-        with open("tmp/report_{id}.json") as f:
+        with open(f"tmp/report_{id}.json", "w") as f:
             json.dump(report.show_as_dict(), f)
         RequestsStatus(responses, f"tmp/rs_{id}.png")
         Throughput(report, f"tmp/tp_{id}.png")
         set_status(id, "finish")
+        logging.info(f"test {id} finished")
     except Exception as e:
         report_error(id, str(e))
+        logging.error(f"Error when running test {id}: {e}")
         return "Error"
     return "OK"
     
@@ -76,6 +79,7 @@ if __name__ == '__main__':
         for id, config in pending_tests:
             logging.info(f"Found pending test {id}, endpoint: {config.url}, model: {config.model}")
             # launch test in other thread
+            set_status(id, "running")
             t = threading.Thread(target=run_with_config, args=(id, config))
             t.start()
             threads.append(t)

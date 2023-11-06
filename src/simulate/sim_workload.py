@@ -5,19 +5,24 @@ import asyncio
 from typing import List, Tuple
 import logging
 import time
+from uuid import uuid4
+from .log_to_db import init_task, mark_finish_for_task
 
 
 async def sim_workload_in_single_thread(
-    workload: Workload, sim_start_time: float | None, **kwargs
+    workload: Workload, sim_start_time: float | None, task_id: str = '', **kwargs
 ) -> List[VisitResponse]:
     """
     Simulate a workload and return the responses.
     """
+    if task_id == '':
+        task_id = str(uuid4())
+        logging.info(f"sim_workload_in_single_thread: task_id is not set, set to {task_id}")
     TIME_TOLERANCE = kwargs.get("time_tolerance", 0.1)
     SKIP_IDLE_MIN: float | None = kwargs.pop("skip_idle_min", None)
     if sim_start_time is None:
         logging.info(
-            "sim_start_time is not set for sim_workload_in_single_thread, simulating immediately."
+            f"<{task_id[:4]}>: sim_start_time is not set, simulating immediately."
         )
     elif sim_start_time - time.time() < TIME_TOLERANCE:
         logging.warning(
@@ -28,18 +33,20 @@ async def sim_workload_in_single_thread(
             f"sim_start_time is set to {sim_start_time}, simulating after {sim_start_time - time.time()} seconds."
         )
         await asyncio.sleep(sim_start_time - time.time())
-    logging.info("sim_workload_in_single_thread: start simulating.")
+    logging.info(f"<{task_id[:4]}>:: start simulating.")
 
     tasks: List[Tuple[int, asyncio.Task]] = list()
     ress: List[Tuple[int, VisitResponse]] = list()
 
     TIME_STEP = kwargs.pop("time_step", min(0.1, TIME_TOLERANCE))
     CHECK_SIZE = kwargs.pop("check_size", 10)
-    start_timestamp = time.time()
     next_index = 0
     total_visit_num = len(workload)
+    total_req_num = sum([len(v) for _, v in workload])
     skip_offset = 0
     finish_num = 0
+    start_timestamp = time.time()
+    init_task(task_id, total_req_num, start_timestamp)
     while True:
         # launch new tasks
         cur_offset = time.time() - start_timestamp + skip_offset
@@ -52,7 +59,7 @@ async def sim_workload_in_single_thread(
             launch_imm = False
             if cur_offset - workload[next_index][0] > TIME_TOLERANCE:
                 logging.warning(
-                    f"visit {next_index} cannot be executed in time, late {cur_offset - workload[next_index][0]}."
+                    f"<{task_id[:4]}>: visit {next_index} cannot be executed in time, late {cur_offset - workload[next_index][0]}."
                 )
                 launch_imm = True
             if abs(cur_offset - workload[next_index][0]) < TIME_TOLERANCE or launch_imm:
@@ -61,7 +68,7 @@ async def sim_workload_in_single_thread(
                     (
                         next_index,
                         asyncio.create_task(
-                            sim_visit(workload[next_index][1], **kwargs)
+                            sim_visit(workload[next_index][1], next_index, task_id, **kwargs)
                         ),
                     )
                 )
@@ -73,7 +80,7 @@ async def sim_workload_in_single_thread(
                     (logging_next_time - cur_offset) if logging_next_time else None
                 )
                 logging.info(
-                    f"launch visit {next_index - 1} finished. next visit {next_index} scheduled at {logging_next_time} after {logging_after}"
+                    f"<{task_id[:4]}>: launch visit {next_index - 1} finished. next visit {next_index} scheduled at {logging_next_time} after {logging_after}"
                 )
 
         # recycle finished tasks & check if system is idle & check if all visits are done
@@ -84,7 +91,7 @@ async def sim_workload_in_single_thread(
                 if tasks[i][1].done():
                     finish_num += 1
                     logging.info(
-                        f"visit <{tasks[i][0]}> done. Total {finish_num}/{total_visit_num} visits done."
+                        f"visit <{task_id[:4]}:{tasks[i][0]}> done. Total {finish_num}/{total_visit_num} visits done."
                     )
                     ress.append((tasks[i][0], tasks[i][1].result()))
                     to_pop.append(i)
@@ -104,7 +111,7 @@ async def sim_workload_in_single_thread(
                 if skip > 0:
                     skip_offset += skip
                     logging.info(
-                        f"skip idle time {skip}, skip_offset now {skip_offset}"
+                        f"<{task_id[:4]}>: skip idle time {skip}, skip_offset now {skip_offset}"
                     )
             if next_index == total_visit_num:
                 break
@@ -114,6 +121,7 @@ async def sim_workload_in_single_thread(
 
     # sort ress
     ress.sort(key=lambda x: x[0])
+    mark_finish_for_task(task_id, time.time())
     return [r[1] for r in ress]
 
 

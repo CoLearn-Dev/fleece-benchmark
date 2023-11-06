@@ -85,6 +85,7 @@ if __name__ == "__main__":
     start_time = time.time()
     ds = ArenaDataset()
     ds_workload = ds.to_workload()
+    print(len(ds_workload))
     rprint(ds_workload[0])
     for d in ds_workload:
         if len(d[1]) > 1:
