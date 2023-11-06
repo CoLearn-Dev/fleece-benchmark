@@ -11,7 +11,7 @@ db_path = "tmp/api_server.db"
 if not os.path.exists(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("CREATE TABLE test (id text, config text, status text, model text, start_timestamp text)")
+    cursor.execute("CREATE TABLE test (id text, config text, status text, model text, start_timestamp text, nickname text)")
     cursor.execute("CREATE TABLE error (id text, error_info text)")
     conn.commit()
 
@@ -22,12 +22,12 @@ def report_error(id: str, error_info: str):
     cursor.execute("UPDATE test SET status=? WHERE id=?", ("error", id))
     conn.commit()
 
-# return a list of (id, timestamp) from latest to oldest, timestamp is a string in format %Y-%m-%d %H:%M:%S
+# return a list of (id, nickname, timestamp) from latest to oldest, timestamp is a string in format %Y-%m-%d %H:%M:%S
 def get_id_list() -> List[str]:
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, start_timestamp FROM test ORDER BY start_timestamp DESC")
-    return [(id, datetime.datetime.fromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")) for id, timestamp in cursor.fetchall()]
+    cursor.execute("SELECT id, nickname, start_timestamp FROM test ORDER BY start_timestamp DESC")
+    return [(id, nickname, datetime.datetime.fromtimestamp(int(timestamp)).strftime("%Y-%m-%d %H:%M:%S")) for id, nickname, timestamp in cursor.fetchall()]
 
 def query_error_info(id: str) -> str:
     conn = sqlite3.connect(db_path)
@@ -62,9 +62,30 @@ def save_config(config: TestConfig) -> str:
     config_str = config.model_dump_json()
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO test VALUES (?, ?, ?, ?, ?)", (id, config_str, "init", model, str(int(time.time()))))
+    cursor.execute("INSERT INTO test VALUES (?, ?, ?, ?, ?, ?)", (id, config_str, "init", model, str(int(time.time())), ""))
     conn.commit()
     return id
+
+def delete_test(id: str):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM test WHERE id=?", (id,))
+    conn.commit()
+
+def set_nickname(id: str, nickname: str):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE test SET nickname=? WHERE id=?", (nickname, id))
+    conn.commit()
+
+def query_nickname(id: str) -> str:
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT nickname FROM test WHERE id=?", (id,))
+    nickname = cursor.fetchone()
+    if nickname is None:
+        return f"Cannot find test {id}"
+    return nickname[0]
 
 def query_test_status(id: str) -> str:
     conn = sqlite3.connect(db_path)

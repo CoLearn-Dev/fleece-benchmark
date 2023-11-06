@@ -4,9 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import logging
 import datetime
+import zipfile
+import glob
 
 from .protocols import TestConfig
-from .db import save_config, set_test_to_pending, query_test_status, query_error_info, query_model, query_config, get_id_list
+from .db import save_config, set_test_to_pending, query_test_status, query_error_info, query_model, query_config, get_id_list, set_nickname, delete_test
 from ..simulate.log_to_db import cur_requests_status_of_task, past_packs_of_task
 
 app = FastAPI()
@@ -40,6 +42,16 @@ def register_and_start(config: TestConfig):
     id = save_config(config)
     set_test_to_pending(id)
     return id
+
+@app.get("/set_nickname/{id}")
+def set_nickname(id: str, nickname: str):
+    set_nickname(id, nickname)
+    return "OK"
+
+@app.get("/delete_test/{id}")
+def delete_test_by_id(id: str):
+    delete_test(id)
+    return "OK"
 
 @app.get("/test_model/{id}")
 def test_model(id: str):
@@ -80,6 +92,19 @@ def report_json(id: str):
     else:
         file_like = open("tmp/report_" + id + ".json", mode="r")
         return StreamingResponse(file_like, media_type="application/json")
+    
+@app.get("/report/download/{id}")
+def download_report(id: str):
+    file_paths = glob.glob("tmp/*_" + id + ".*")
+    if len(file_paths) == 0:
+        raise HTTPException(status_code=404, detail="Report not found")
+    else:
+        zip_filename = f'tmp/{id}.zip'
+        with zipfile.ZipFile(zip_filename, 'w') as zipf:
+            for file in file_paths:
+                zipf.write(file, arcname=os.path.basename(file))
+        file_like = open(zip_filename, mode="rb")
+        return StreamingResponse(file_like, media_type="application/zip", headers={'Content-Disposition': f'attachment; filename="{id}.zip"'})
     
 @app.get("/trace/status/{id}")
 def trace_status(id: str):
