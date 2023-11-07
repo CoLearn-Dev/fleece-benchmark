@@ -170,3 +170,5 @@ data/
 
 tmp
 node_modules
+
+*.pem
