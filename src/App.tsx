@@ -80,7 +80,7 @@ const App: React.FC = () => {
       return "Benchmark Report"
     }
   }
-  const [backend_url, setBackendUrl] = useState<string>('https://llm-speedtest.colearn.cloud:8000');
+  const [backend_url, setBackendUrl] = useState<string>('https://llm-benchmark-api.colearn.cloud:8000');
 
   const [activeBodyKey, setactiveBodyKey] = useState<string>('body0');
   const [collapsed, setCollapsed] = useState(false);
@@ -572,7 +572,7 @@ const App: React.FC = () => {
       console.log(error);
     });
   }}, [activeBodyKey]);
-  const [input_backend_url, setInputBackendUrl] = useState<string>('https://llm-speedtest.colearn.cloud:8000');
+  const [input_backend_url, setInputBackendUrl] = useState<string>('https://llm-benchmark-api.colearn.cloud:8000');
 
   return (
     <>
@@ -613,7 +613,7 @@ const App: React.FC = () => {
                       <Title>LLM Serving Speed Test</Title>
                       <Title level={2}>Description</Title>
                       <Paragraph>
-                      This tool provides a benchmark tool for evaluating the inference speed for any LLM serving endpoint (currently supports <Link href="https://platform.openai.com/docs/api-reference/chat/create">OpenAI Chat Completion API</Link>). 
+                      This project provides a benchmark tool for evaluating the inference speed for any LLM serving endpoint (currently supports <Link href="https://platform.openai.com/docs/api-reference/chat/create">OpenAI Chat Completion API</Link>). 
                       It includes evaluations of the endpoint's performance and stability and can provide reports including many import metrics, such as:
                       <ul>
                         <li>the throughput (total TPS for the whole endpoint)</li>
@@ -663,9 +663,24 @@ const App: React.FC = () => {
                     <Flex justify='space-between'>
                     <Card
                       hoverable
-                      cover={<img alt="example" src="" />}
+                      style = {{width: '33%'}}
+                      cover={<Image alt="config" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/config_pic.png" />}
                     >
                       <Card.Meta title="Launch a new test with highly customizable workloads" description="" />
+                    </Card>
+                    <Card
+                      hoverable
+                      style = {{width: '33%'}}
+                      cover={<Image alt="config" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/dashboard_pic.png" />}
+                    >
+                      <Card.Meta title="See the live dashboard tracking the evaluation procedure" description="" />
+                    </Card>
+                    <Card
+                      hoverable
+                      style = {{width: '33%'}}
+                      cover={<Image alt="config" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/view_report.png" />}
+                    >
+                      <Card.Meta title="Review detailed benchmarking report with visualizations" description="" />
                     </Card>
                     </Flex>
                   </Card>

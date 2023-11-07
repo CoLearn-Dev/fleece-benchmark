@@ -2,7 +2,7 @@
   "name": "antd-demo",
   "version": "0.1.0",
   "private": true,
-  "homepage": "http://colearn.dev/fleece-benchmark/",
+  "homepage": "https://llm-speedtest.colearn.cloud/",
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
     "@antv/g2plot": "^2.4.31",
