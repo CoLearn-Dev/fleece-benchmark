@@ -44,7 +44,7 @@ def register_and_start(config: TestConfig):
     return id
 
 @app.get("/set_nickname/{id}")
-def set_nickname(id: str, nickname: str):
+def set_nickname_by_id(id: str, nickname: str):
     set_nickname(id, nickname)
     return "OK"
 
