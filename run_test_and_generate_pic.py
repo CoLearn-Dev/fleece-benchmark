@@ -60,7 +60,12 @@ if __name__ == "__main__":
         pickle.dump(
             asyncio.run(
                 sim_workload_in_single_thread(
-                    w, None, skip_idle_min=20, time_step=0.001, request_timeout = 3600, **conf
+                    w,
+                    None,
+                    skip_idle_min=20,
+                    time_step=0.001,
+                    request_timeout=3600,
+                    **conf,
                 )
             ),
             open(f"tmp/responses_{n}.pkl", "wb"),

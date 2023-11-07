@@ -10,14 +10,16 @@ from .log_to_db import init_task, mark_finish_for_task
 
 
 async def sim_workload_in_single_thread(
-    workload: Workload, sim_start_time: float | None, task_id: str = '', **kwargs
+    workload: Workload, sim_start_time: float | None, task_id: str = "", **kwargs
 ) -> List[VisitResponse]:
     """
     Simulate a workload and return the responses.
     """
-    if task_id == '':
+    if task_id == "":
         task_id = str(uuid4())
-        logging.info(f"sim_workload_in_single_thread: task_id is not set, set to {task_id}")
+        logging.info(
+            f"sim_workload_in_single_thread: task_id is not set, set to {task_id}"
+        )
     TIME_TOLERANCE = kwargs.get("time_tolerance", 0.1)
     SKIP_IDLE_MIN: float | None = kwargs.pop("skip_idle_min", None)
     if sim_start_time is None:
@@ -68,7 +70,9 @@ async def sim_workload_in_single_thread(
                     (
                         next_index,
                         asyncio.create_task(
-                            sim_visit(workload[next_index][1], next_index, task_id, **kwargs)
+                            sim_visit(
+                                workload[next_index][1], next_index, task_id, **kwargs
+                            )
                         ),
                     )
                 )

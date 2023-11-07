@@ -7,10 +7,17 @@ import time
 import asyncio
 import logging
 import time
-from .log_to_db import init_request, mark_success_for_request, mark_error_for_request, log_new_pack
+from .log_to_db import (
+    init_request,
+    mark_success_for_request,
+    mark_error_for_request,
+    log_new_pack,
+)
 
 
-async def sim_visit(visit: Visit, visit_index: int, task_id: str, **kwargs) -> VisitResponse:
+async def sim_visit(
+    visit: Visit, visit_index: int, task_id: str, **kwargs
+) -> VisitResponse:
     """
     Simulate a visit and return the responses.
     """
@@ -20,7 +27,9 @@ async def sim_visit(visit: Visit, visit_index: int, task_id: str, **kwargs) -> V
     last_finish = None
     HUMAN_INPUT_WPS = kwargs.pop("human_input_wps", 1.0)
     TIME_TOLERANCE = kwargs.pop("time_tolerance", 0.1)
-    logging.debug(f"<sim_visit {visit_index}>: launch visit sim, size of dialog {len(visit)}.")
+    logging.debug(
+        f"<sim_visit {visit_index}>: launch visit sim, size of dialog {len(visit)}."
+    )
     for scheduled_offest, sim_req in visit:
         launch_latency = 0.0
         dialog = sim_req.messages(ctx)
@@ -58,7 +67,13 @@ async def sim_visit(visit: Visit, visit_index: int, task_id: str, **kwargs) -> V
                         raise res_piece
                     res_loggings.append((time.time(), res_piece))
                     if res_piece.content:
-                        log_new_pack(task_id, visit_index, sim_req.id, time.time(), res_piece.content)
+                        log_new_pack(
+                            task_id,
+                            visit_index,
+                            sim_req.id,
+                            time.time(),
+                            res_piece.content,
+                        )
                 ret_str = "".join(
                     [
                         p[1].content
@@ -83,8 +98,11 @@ async def sim_visit(visit: Visit, visit_index: int, task_id: str, **kwargs) -> V
             )
             mark_success_for_request(task_id, visit_index, sim_req.id, last_finish)
         except Exception as e:
-            logging.warning(f"<sim_visit {visit_index}>: exception caught, visit failed: {str(e)}")
+            logging.warning(
+                f"<sim_visit {visit_index}>: exception caught, visit failed: {str(e)}"
+            )
             import traceback
+
             exit_time = time.time()
 
             responses.append(

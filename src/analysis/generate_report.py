@@ -4,11 +4,13 @@ from typing import List
 import numpy as np
 import bisect
 
+
 def count_tokens_from_str(s: str, tokenizer_name: str) -> int:
     if "llama" in tokenizer_name or "Llama" in tokenizer_name:
         return 1
     elif "gpt" in tokenizer_name:
         import tiktoken
+
         enc = tiktoken.encoding_for_model(tokenizer_name)
         return len(enc.encode(s))
     else:
@@ -19,9 +21,8 @@ def count_tokens_from_str(s: str, tokenizer_name: str) -> int:
         except Exception as e:
             print("load tokenizer failed, error info:", e)
             raise e
-        return len(
-            tokenizer(s, return_tensors="np")["input_ids"][0]
-        )
+        return len(tokenizer(s, return_tensors="np")["input_ids"][0])
+
 
 def generate_request_level_report(
     ress: List[ReqResponse], tokenizer_name: str, **kwargs
@@ -56,7 +57,9 @@ def generate_request_level_report(
         ty = token_timestamp[0][0] + i * throughput_step
         sample_list[i] = bisect.bisect_right(
             token_timestamp, ty + throughput_windows / 2, key=lambda x: x[0]
-        ) - bisect.bisect_left(token_timestamp, ty - throughput_windows / 2, key=lambda x: x[0])
+        ) - bisect.bisect_left(
+            token_timestamp, ty - throughput_windows / 2, key=lambda x: x[0]
+        )
     sample_list = sample_list / throughput_windows
     TPOT: List[float] = []
     for ti, to in zip(time_per_request, token_per_request):

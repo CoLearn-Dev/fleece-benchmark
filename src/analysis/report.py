@@ -9,7 +9,7 @@ class RequestLevelReport:
     fail_rate: float
 
     TTFT: List[float]  # Time To First Token (TTFT)
-    latency: List[float] # Time cost from request to last response
+    latency: List[float]  # Time cost from request to last response
     SLO: float  # Service Level Objective
     time_per_request: List[float]
     token_per_request: List[int]

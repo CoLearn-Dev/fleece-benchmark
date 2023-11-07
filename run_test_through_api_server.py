@@ -22,8 +22,8 @@ if __name__ == "__main__":
     print(requests.get(f"http://localhost:8000/start_test/{id}").text)
     while True:
         status = requests.get(f"http://localhost:8000/test_status/{id}").text[1:-1]
-        print("\r"+" "*40,end='')
-        print(f"\rstatus: {status}",end='')
+        print("\r" + " " * 40, end="")
+        print(f"\rstatus: {status}", end="")
         if status == "finish":
             print()
             break
@@ -35,5 +35,6 @@ if __name__ == "__main__":
         res = requests.get(f"http://localhost:8000/report/json/{id}")
     print(res.json())
     print(f"{id} finished.")
-    print(f"you can see the report at \nhttp://localhost:8000/report/throughput/{id}\nhttp://localhost:8000/report/requests_status/{id}")
-    
+    print(
+        f"you can see the report at \nhttp://localhost:8000/report/throughput/{id}\nhttp://localhost:8000/report/requests_status/{id}"
+    )
