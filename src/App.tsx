@@ -623,9 +623,7 @@ const App: React.FC = () => {
                       </ul>
                       You can analyze the ability of your system in many aspects through these metrics. What's more, our benchmark tool also provides workloads from the real world and offers an easy-to-use interface to customize workloads.
                       </Paragraph>
-                    </Typography>
-                    </Card>
-                    <Card title={"Try our benchmark now!"}>
+                    <Title level={2}>Try our benchmark now!</Title>
                       <Flex justify='space-around' align='center'>
                         <Button type="default" icon={<RocketOutlined />} size='large' onClick={(e)=>{setactiveBodyKey('body1')}}>
                           Launch a new speed test
@@ -640,40 +638,41 @@ const App: React.FC = () => {
                           Submit an issue
                         </Button>
                       </Flex>
+                    </Typography>
+                  </Card>
+                  <Card title={"Screenshots"}>
+                    <Flex justify='space-between'>
+                    <Card
+                      hoverable
+                      style = {{width: '24%'}}
+                      cover={<Image alt="config" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/config_pic.png" />}
+                    >
+                      <Card.Meta title={<Tooltip title="Launch a new test with highly customizable workloads">Launch a new test with highly customizable workloads</Tooltip>} description="" />
                     </Card>
-                    <Card title={"Screenshots"}>
-                      <Flex justify='space-between'>
-                      <Card
-                        hoverable
-                        style = {{width: '24%'}}
-                        cover={<Image alt="config" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/config_pic.png" />}
-                      >
-                        <Card.Meta title={<Tooltip title="Launch a new test with highly customizable workloads">Launch a new test with highly customizable workloads</Tooltip>} description="" />
-                      </Card>
-                      <Card
-                        hoverable
-                        style = {{width: '24%'}}
-                        cover={<Image alt="dashboard" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/dashboard_pic.png" />}
-                      >
-                        <Card.Meta title={<Tooltip title="See the live dashboard tracking the evaluation procedure">See the live dashboard tracking the evaluation procedure</Tooltip>} description="" />
-                      </Card>
-                      <Card
-                        hoverable
-                        style = {{width: '24%'}}
-                        cover={<Image alt="visualizations" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/visualizations.png" />}   // TODO: change report pic to view report pic
-                      >
-                        <Card.Meta title={<Tooltip title="Review detailed benchmarking report with visualizations">Review detailed benchmarking report with visualizations</Tooltip>} description="" />
-                      </Card>
-                      <Card
-                        hoverable
-                        style = {{width: '24%'}}
-                        cover={<Image alt="share" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/share.png" />}   // TODO: change report pic to view report pic
-                      >
-                        <Card.Meta title={<Tooltip title='Export and share the report for further comparison and analysis'>Export and share the report for further comparison and analysis</Tooltip>} description="" />
-                      </Card>
-                      </Flex>
+                    <Card
+                      hoverable
+                      style = {{width: '24%'}}
+                      cover={<Image alt="dashboard" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/dashboard_pic.png" />}
+                    >
+                      <Card.Meta title={<Tooltip title="See the live dashboard tracking the evaluation procedure">See the live dashboard tracking the evaluation procedure</Tooltip>} description="" />
                     </Card>
-                    <Card title={"Use self-host backend"}>
+                    <Card
+                      hoverable
+                      style = {{width: '24%'}}
+                      cover={<Image alt="visualizations" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/visualizations.png" />}   // TODO: change report pic to view report pic
+                    >
+                      <Card.Meta title={<Tooltip title="Review detailed benchmarking report with visualizations">Review detailed benchmarking report with visualizations</Tooltip>} description="" />
+                    </Card>
+                    <Card
+                      hoverable
+                      style = {{width: '24%'}}
+                      cover={<Image alt="share" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/share.png" />}   // TODO: change report pic to view report pic
+                    >
+                      <Card.Meta title={<Tooltip title='Export and share the report for further comparison and analysis'>Export and share the report for further comparison and analysis</Tooltip>} description="" />
+                    </Card>
+                    </Flex>
+                  </Card>
+                  <Card title={"Use self-host backend"}>
                     <Typography>
                       As an open-source project, you can setup your self-host benchmark backend. You just need to follow these steps:
                       <ul>
