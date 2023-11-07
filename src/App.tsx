@@ -80,7 +80,7 @@ const App: React.FC = () => {
       return "Benchmark Report"
     }
   }
-  const [backend_url, setBackendUrl] = useState<string>('http://52.10.162.207:8000');
+  const [backend_url, setBackendUrl] = useState<string>('https://llm-speedtest.colearn.cloud:8000');
 
   const [activeBodyKey, setactiveBodyKey] = useState<string>('body0');
   const [collapsed, setCollapsed] = useState(false);
@@ -571,7 +571,7 @@ const App: React.FC = () => {
       console.log(error);
     });
   }}, [activeBodyKey]);
-  const [input_backend_url, setInputBackendUrl] = useState<string>('52.10.162.207:8000');
+  const [input_backend_url, setInputBackendUrl] = useState<string>('https://llm-speedtest.colearn.cloud:8000');
 
   return (
     <>
@@ -647,12 +647,12 @@ const App: React.FC = () => {
                         <li>Step 5: start the worker of backend <pre>python -m src.api_server.worker</pre></li>
                         <li>Step 6: configure the url of your backend here:
                           <Space.Compact style={{ width: '100%' }} size="large">
-                            <Input addonBefore="http://" 
+                            <Input  
                               value={input_backend_url} 
                               onChange={(e: any)=>{setInputBackendUrl(e.target.value)}}
                               placeholder="input the url of benchmark endpoint" 
-                              onPressEnter={(e)=>(setBackendUrl('http://'+input_backend_url))}/>
-                            <Button type="primary" onClick={(e)=>(setBackendUrl('http://'+input_backend_url))}>Set</Button>
+                              onPressEnter={(e)=>(setBackendUrl(input_backend_url))}/>
+                            <Button type="primary" onClick={(e)=>(setBackendUrl(input_backend_url))}>Set</Button>
                           </Space.Compact>
                         </li>
                       </ul>
