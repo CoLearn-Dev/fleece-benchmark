@@ -88,6 +88,7 @@ const App: React.FC = () => {
     token: { colorBgContainer },
   } = theme.useToken();
   const change_nick_name = () => {
+    console.log(backend_url + "/set_nickname/" + test_id + "?nickname=" + nickname)
     axios.get(backend_url + "/set_nickname/" + test_id + "?nickname=" + nickname).then(function (response) {
       console.log("set nickname success", response.data);
       api.success({
