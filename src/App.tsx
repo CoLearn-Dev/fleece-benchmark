@@ -667,7 +667,7 @@ const App: React.FC = () => {
                       <Card
                         hoverable
                         style = {{width: '24%'}}
-                        cover={<Image alt="share" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/share.png" />}   // TODO: change report pic to view report pic
+                        cover={<Image alt="share" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/share.png" />}   // TODO: change report pic to view report pic
                       >
                         <Card.Meta title={<Tooltip title='Export and share the report for further comparison and analysis'>Export and share the report for further comparison and analysis</Tooltip>} description="" />
                       </Card>
