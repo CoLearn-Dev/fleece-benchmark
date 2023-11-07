@@ -17,7 +17,7 @@ import {
   GithubOutlined,
   BugOutlined,
 } from '@ant-design/icons';
-import { Statistic, Flex, List, Image, Descriptions, Breadcrumb, Layout, Menu, theme, Button, Select, Switch, Form, Input, Space, Card, Row, Col, InputNumber, Slider, notification, Typography, Modal, } from 'antd';
+import { Tooltip, Statistic, Flex, List, Image, Descriptions, Breadcrumb, Layout, Menu, theme, Button, Select, Switch, Form, Input, Space, Card, Row, Col, InputNumber, Slider, notification, Typography, Modal, } from 'antd';
 import type { DescriptionsProps } from 'antd';
 import { Line, Gauge } from '@antv/g2plot';
 import axios from 'axios';
@@ -305,7 +305,7 @@ const App: React.FC = () => {
             children: String((parseFloat(metrics["SLO"]) * 100).toFixed(2)) + " %",
           },
           {
-            label: 'Max Throughput / tokens per second',
+            label: 'Peak Throughput / tokens per second',   // TODO: add avg throughput
             children: parseFloat(metrics["Throughput"]).toFixed(2),
           },
           {
@@ -611,10 +611,10 @@ const App: React.FC = () => {
                   <Card title={"Introduction"}>
                     <Typography>
                       <Title>LLM Serving Speed Test</Title>
-                      <Title level={2}>Description</Title>
+                      {/* <Title level={2}>Description</Title> */}
                       <Paragraph>
                       This project provides a benchmark tool for evaluating the inference speed for any LLM serving endpoint (currently supports <Link href="https://platform.openai.com/docs/api-reference/chat/create">OpenAI Chat Completion API</Link>). 
-                      It includes evaluations of the endpoint's performance and stability and can provide reports including many import metrics, such as:
+                      It includes evaluations of the endpoint's performance and stability and can provide reports including many important metrics, such as:
                       <ul>
                         <li>the throughput (total TPS for the whole endpoint)</li>
                         <li>request-level-TPS (for each request, the user can see how many tokens per second)</li>
@@ -623,7 +623,9 @@ const App: React.FC = () => {
                       </ul>
                       You can analyze the ability of your system in many aspects through these metrics. What's more, our benchmark tool also provides workloads from the real world and offers an easy-to-use interface to customize workloads.
                       </Paragraph>
-                      <Title level={2}>Try our benchmark now!</Title>
+                    </Typography>
+                    </Card>
+                    <Card title={"Try our benchmark now!"}>
                       <Flex justify='space-around' align='center'>
                         <Button type="default" icon={<RocketOutlined />} size='large' onClick={(e)=>{setactiveBodyKey('body1')}}>
                           Launch a new speed test
@@ -638,7 +640,41 @@ const App: React.FC = () => {
                           Submit an issue
                         </Button>
                       </Flex>
-                      <Title level={2}>Use self-host backend</Title>
+                    </Card>
+                    <Card title={"Screenshots"}>
+                      <Flex justify='space-between'>
+                      <Card
+                        hoverable
+                        style = {{width: '24%'}}
+                        cover={<Image alt="config" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/config_pic.png" />}
+                      >
+                        <Card.Meta title={<Tooltip title="Launch a new test with highly customizable workloads">Launch a new test with highly customizable workloads</Tooltip>} description="" />
+                      </Card>
+                      <Card
+                        hoverable
+                        style = {{width: '24%'}}
+                        cover={<Image alt="dashboard" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/dashboard_pic.png" />}
+                      >
+                        <Card.Meta title={<Tooltip title="See the live dashboard tracking the evaluation procedure">See the live dashboard tracking the evaluation procedure</Tooltip>} description="" />
+                      </Card>
+                      <Card
+                        hoverable
+                        style = {{width: '24%'}}
+                        cover={<Image alt="visualizations" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/visualizations.png" />}   // TODO: change report pic to view report pic
+                      >
+                        <Card.Meta title={<Tooltip title="Review detailed benchmarking report with visualizations">Review detailed benchmarking report with visualizations</Tooltip>} description="" />
+                      </Card>
+                      <Card
+                        hoverable
+                        style = {{width: '24%'}}
+                        cover={<Image alt="share" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/share.png" />}   // TODO: change report pic to view report pic
+                      >
+                        <Card.Meta title={<Tooltip title='Export and share the report for further comparison and analysis'>Export and share the report for further comparison and analysis</Tooltip>} description="" />
+                      </Card>
+                      </Flex>
+                    </Card>
+                    <Card title={"Use self-host backend"}>
+                    <Typography>
                       As an open-source project, you can setup your self-host benchmark backend. You just need to follow these steps:
                       <ul>
                         <li>Step 1: clone our <Link href="https://github.com/CoLearn-Dev/fleece-benchmark">repo</Link> with <pre>git clone https://github.com/CoLearn-Dev/fleece-benchmark.git</pre></li>
@@ -658,31 +694,6 @@ const App: React.FC = () => {
                         </li>
                       </ul>
                     </Typography>
-                  </Card>
-                  <Card title={"Screenshots"}>
-                    <Flex justify='space-between'>
-                    <Card
-                      hoverable
-                      style = {{width: '33%'}}
-                      cover={<Image alt="config" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/config_pic.png" />}
-                    >
-                      <Card.Meta title="Launch a new test with highly customizable workloads" description="" />
-                    </Card>
-                    <Card
-                      hoverable
-                      style = {{width: '33%'}}
-                      cover={<Image alt="config" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/dashboard_pic.png" />}
-                    >
-                      <Card.Meta title="See the live dashboard tracking the evaluation procedure" description="" />
-                    </Card>
-                    <Card
-                      hoverable
-                      style = {{width: '33%'}}
-                      cover={<Image alt="config" src="https://raw.githubusercontent.com/CoLearn-Dev/fleece-benchmark/web/pic/view_report.png" />}
-                    >
-                      <Card.Meta title="Review detailed benchmarking report with visualizations" description="" />
-                    </Card>
-                    </Flex>
                   </Card>
                 </Space>
               </div>
