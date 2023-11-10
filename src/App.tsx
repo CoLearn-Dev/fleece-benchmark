@@ -34,7 +34,12 @@ const str_to_placeholder = (s: string, placeholder: string, mark_value: string =
   return s;
 }
 
-const App: React.FC = () => {
+interface AppProps {
+  tid: string;
+}
+
+const App = ({ tid }: AppProps) => {
+  console.log("url id", tid);
   const [test_id, setTestId] = useState<string>('null');
   const [nickname, setNickname] = useState<string>('');
   const [test_config, setTestConfig] = useState<any>({});
@@ -229,6 +234,13 @@ const App: React.FC = () => {
         axios.get(backend_url + "/test_status/" + test_id).then(function (response) {
           setLoading(false);
           console.log("get status success:", response.data);
+          if (response.data === "Cannot find test "+test_id) {
+            setTestId("null");
+            Modal.error({
+              title: 'Benchmark not found',
+              content: 'Please check your input ID',
+            });
+          }
           setTestStatus(response.data);
           if (response.data === "finish") {
             api.success({
@@ -538,6 +550,8 @@ const App: React.FC = () => {
     if (reload_config){
       setReloadConfig(false);
       setTestStatus("null");
+      setStatData([]);
+      setTpsHis([]);
       axios.get(backend_url + "/config/" + test_id).then(function (response) {
         console.log("get config success", response.data);
         const config = response.data;
@@ -573,6 +587,14 @@ const App: React.FC = () => {
     });
   }}, [activeBodyKey]);
   const [input_backend_url, setInputBackendUrl] = useState<string>('https://llm-benchmark-api.colearn.cloud:8000');
+
+  useEffect(() => {
+    if (tid !== "null" && test_id === "null") {
+      setTestId(tid);
+      setactiveBodyKey("body2");
+      setReloadConfig(true);
+      setLoading(true);
+    }}, []);
 
   return (
     <>
