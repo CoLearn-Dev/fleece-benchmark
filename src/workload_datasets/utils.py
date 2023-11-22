@@ -1,5 +1,5 @@
 from typing import List, Tuple, Any
-from .protocol import Visit, NotNoneOffset
+from .protocol import Visit, NotNoneOffset, Workload
 import logging
 
 
@@ -26,7 +26,11 @@ def assert_visit_is_legal(visit: Visit):
             assert message.content is not None or message.dep_id is not None
 
 
-def cache(enable=True, root_dir="tmp/"):
+def compress_workload(workload: Workload, compression_ratio: float) -> Workload:
+    return [(o / compression_ratio, v) for (o, v) in workload]
+
+
+def cache(root_dir="tmp/"):
     """
     Cache the return value of a **method function** in disk using pickle.
     The first argument of the function must be `self`.
@@ -38,8 +42,6 @@ def cache(enable=True, root_dir="tmp/"):
     import os
     import functools
 
-    if not enable:
-        return lambda f: f
 
     def decorator(f):
         @functools.wraps(f)

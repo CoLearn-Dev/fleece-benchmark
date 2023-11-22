@@ -29,7 +29,7 @@ def generate_request_level_report(
 ) -> RequestLevelReport:
     success = [res for res in ress if res.error_info is None]
     assert len(success) > 0, "all requests failed, cannot generate report."
-    TTLB = [res.loggings[0][0] - res.start_timestamp for res in success]
+    TTFT = [res.loggings[0][0] - res.start_timestamp for res in success]
     start_on_time = [res.launch_latency == 0.0 for res in success]
     time_per_request = [res.end_timestamp - res.start_timestamp for res in success]
     token_per_request = []
@@ -70,13 +70,14 @@ def generate_request_level_report(
     return RequestLevelReport(
         request_num=len(ress),
         fail_rate=1 - len(success) / len(ress),
-        TTFT=TTLB,
-        latency=[res.end_timestamp - res.start_timestamp for res in ress],
+        TTFT=TTFT,
+        latency=[res.end_timestamp - res.start_timestamp for res in success],
         SLO=len(start_on_time) / len(ress),
         time_per_request=time_per_request,
         token_per_request=token_per_request,
         token_timestamp=token_timestamp,
         TPOT=TPOT,
+        total_tps_list=sample_list,
         Throughput=np.max(sample_list),
         tokenizer_name=tokenizer_name,
     )

@@ -172,3 +172,8 @@ tmp
 node_modules
 
 *.pem
+*.pem.outdate
+
+# leaderboard
+leaderboard_data/old_data
+src/leaderboard/keys.py

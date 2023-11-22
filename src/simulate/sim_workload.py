@@ -10,7 +10,11 @@ from .log_to_db import init_task, mark_finish_for_task
 
 
 async def sim_workload_in_single_thread(
-    workload: Workload, sim_start_time: float | None, task_id: str = "", **kwargs
+    workload: Workload,
+    sim_start_time: float | None,
+    endpoint_type: str,
+    task_id: str = "",
+    **kwargs,
 ) -> List[VisitResponse]:
     """
     Simulate a workload and return the responses.
@@ -71,7 +75,11 @@ async def sim_workload_in_single_thread(
                         next_index,
                         asyncio.create_task(
                             sim_visit(
-                                workload[next_index][1], next_index, task_id, **kwargs
+                                workload[next_index][1],
+                                next_index,
+                                task_id,
+                                endpoint_type,
+                                **kwargs,
                             )
                         ),
                     )

@@ -17,17 +17,22 @@ class RequestLevelReport:
     TPOT: List[float]  # Time Per Output Token (avg for each request)
     Throughput: float
     tokenizer_name: str
+    total_tps_list: List[float]
 
     def show_as_dict(self):
         return {
             "request_num": self.request_num,
             "fail_rate": self.fail_rate,
             "TTFT": {
+                "min": np.min(self.TTFT),
+                "max": np.max(self.TTFT),
                 "avg": np.mean(self.TTFT),
                 "std": np.std(self.TTFT),
             },
             "SLO": self.SLO,
             "TPOT": {
+                "min": np.min(self.TPOT),
+                "max": np.max(self.TPOT),
                 "avg": np.mean(self.TPOT),
                 "std": np.std(self.TPOT),
             },

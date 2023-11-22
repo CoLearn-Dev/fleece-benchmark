@@ -87,7 +87,17 @@ def error_info(id: str):
 
 @app.get("/id_list")
 def id_list():
-    return get_id_list()
+    # return get_id_list()
+    return []
+
+
+@app.get("/get/workload_hash/{id}")
+def get_workload_hash(id: str):
+    if not os.path.exists("tmp/workload_hash_" + id + ".txt"):
+        raise HTTPException(status_code=404, detail="Workload hash not found")
+    else:
+        with open("tmp/workload_hash_" + id + ".txt", mode="r") as f:
+            return f.read()
 
 
 @app.get("/report/throughput/{id}")

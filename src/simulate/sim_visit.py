@@ -1,7 +1,7 @@
 from ..workload_datasets.protocol import Visit, VisitCtx
 from .protocol import ReqResponse, VisitResponse
 from typing import List, Tuple
-from ..API.openai import streaming_inference
+from ..API.endpoint_interface import get_streaming_inference
 from ..API.api_protocol import ResPiece
 import time
 import asyncio
@@ -16,7 +16,7 @@ from .log_to_db import (
 
 
 async def sim_visit(
-    visit: Visit, visit_index: int, task_id: str, **kwargs
+    visit: Visit, visit_index: int, task_id: str, endpoint_type: str, **kwargs
 ) -> VisitResponse:
     """
     Simulate a visit and return the responses.
@@ -62,7 +62,9 @@ async def sim_visit(
                 inference_conf["model"] is not None
             ), f"<sim_visit {visit_index}>: model must be specified"
             if sim_req.stream:
-                async for res_piece in streaming_inference(dialog, **inference_conf):
+                async for res_piece in get_streaming_inference(endpoint_type)(
+                    dialog, **inference_conf
+                ):
                     if isinstance(res_piece, Exception):
                         raise res_piece
                     res_loggings.append((time.time(), res_piece))
@@ -98,10 +100,12 @@ async def sim_visit(
             )
             mark_success_for_request(task_id, visit_index, sim_req.id, last_finish)
         except Exception as e:
-            logging.warning(
-                f"<sim_visit {visit_index}>: exception caught, visit failed: {str(e)}"
-            )
             import traceback
+
+            infos = traceback.format_exc()
+            logging.warning(
+                f"<sim_visit {visit_index}>: exception caught, visit failed: {str(e)}: {infos}"
+            )
 
             exit_time = time.time()
 
@@ -113,7 +117,7 @@ async def sim_visit(
                     dialog=dialog + [{"role": "assitant", "content": ret_str}],
                     loggings=res_loggings,
                     launch_latency=launch_latency,
-                    error_info=(str(e), traceback.format_exc()),
+                    error_info=(str(e), infos),
                 )
             )
             mark_error_for_request(task_id, visit_index, sim_req.id, exit_time, str(e))

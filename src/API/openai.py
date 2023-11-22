@@ -52,15 +52,7 @@ if __name__ == "__main__":
     from rich.live import Live
     from rich.table import Table
     from rich import box
-    from ..secret import api_base, openai_key
 
-    # conf = {
-    #     "api_base": "http://3.14.115.113:8000/v1",
-    #     "api_key": "EMPTY",
-    #     "model": "vicuna-7b-v1.3",
-    #     "n": 2,
-    #     "max_tokens": 128,
-    # }
     conf = {
         "api_key": "sk-xx",
         "model": "gpt-3.5-turbo",

@@ -3,6 +3,7 @@ import asyncio
 import pickle
 import threading
 import json
+import hashlib
 from typing import List
 from .db import get_all_pending_tests, set_status, report_error
 from .protocols import TestConfig
@@ -21,6 +22,14 @@ from ..simulate.protocol import ReqResponse
 from ..analysis.draw_pic import RequestsStatus, Throughput
 
 
+def lambda_func_policy_check(f: str):
+    import re
+
+    pattern = r"^lambdat:int\(t/\d+(\.\d+)?\+\d+(\.\d+)?\)ift<\d+(\.\d+)?elseNone$"
+    if not re.match(pattern, f.replace(" ", "")):
+        raise Exception(f"lambda function {f} does not match pattern")
+
+
 def run_with_config(id: str, config: TestConfig):
     try:
         if config.dataset_name == "synthesizer":
@@ -29,31 +38,48 @@ def run_with_config(id: str, config: TestConfig):
             ]().dialogs()
             dataset = dataset_dict[config.dataset_name](source)
             func = config.dataset_config.pop("func")
+            lambda_func_policy_check(func)
             lambda_func = eval(func)
             workload = dataset.to_workload(
-                workload_generator=lambda_func, **config.dataset_config
+                workload_generator=lambda_func,
+                random_seed=config.random_seed,
+                **config.dataset_config,
             )
         else:
             dataset = dataset_dict[config.dataset_name]()
             workload = dataset.to_workload(**config.dataset_config)
-        workload = workload[config.workload_range[0] : config.workload_range[1]]
+            workload = workload[config.workload_range[0] : config.workload_range[1]]
         run_config = {
+            "time_step": 0.01,
             "api_base": config.url,
             "api_key": config.key,
             "model": config.model,
             **config.kwargs,
         }
-        logging.info(f"start {id}, size {len(workload)}")
+        hash_func = hashlib.md5()
+        hash_func.update(pickle.dumps(workload))
+        workload_hash = hash_func.hexdigest()
+        logging.info(
+            f"start {id}, size {len(workload)}, hash {workload_hash}, endpoint {config.endpoint_type}"
+        )
         raw_result = asyncio.run(
-            sim_workload_in_single_thread(workload, None, id, **run_config)
+            sim_workload_in_single_thread(
+                workload, None, config.endpoint_type, id, **run_config
+            )
         )
         pickle.dump(
             raw_result,
             open(f"tmp/responses_{id}.pkl", "wb"),
         )
+        with open(f"tmp/workload_hash_{id}.txt", "w") as f:
+            f.write(workload_hash)
         responses: List[ReqResponse] = sum([v.responses for v in raw_result], [])
         logging.info("start generate reports")
-        report = generate_request_level_report(responses, config.model)
+        report = generate_request_level_report(responses, config.get_model_name())
+        pickle.dump(
+            report,
+            open(f"tmp/raw_report_{id}.pkl", "wb"),
+        )
         with open(f"tmp/report_{id}.json", "w") as f:
             json.dump(report.show_as_dict(), f)
         RequestsStatus(responses, f"tmp/rs_{id}.png")

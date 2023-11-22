@@ -1,6 +1,6 @@
 from typing import List
 from .protocol import Workload, SimReq, OpenAIMessage
-from .utils import key_timestamp_to_offset, cache
+from .utils import key_timestamp_to_offset, cache, compress_workload
 from datetime import datetime
 
 
@@ -72,6 +72,8 @@ class Oasst1Dataset:
                 max_tokens=kwargs.get("max_tokens", None),
             )
 
+        compression_ratio = kwargs.pop("compression_ratio", 1.0)
+
         if not separate_req_in_one_visit:
 
             def get_visit_start_time(group):
@@ -98,14 +100,19 @@ class Oasst1Dataset:
                         ),
                     )
                 )
-            return key_timestamp_to_offset(unordered_workloads)
+            return compress_workload(
+                key_timestamp_to_offset(unordered_workloads), compression_ratio
+            )
         else:
-            return key_timestamp_to_offset(
-                [
-                    (v["timestamp"], [(None, parse_simreq(v["message_id"]))])
-                    for v in self.dicted_data.values()
-                    if v["role"] == "prompter"
-                ]
+            return compress_workload(
+                key_timestamp_to_offset(
+                    [
+                        (v["timestamp"], [(None, parse_simreq(v["message_id"]))])
+                        for v in self.dicted_data.values()
+                        if v["role"] == "prompter"
+                    ]
+                ),
+                compression_ratio,
             )
 
     def dialogs(self) -> List[str]:
@@ -120,6 +127,13 @@ if __name__ == "__main__":
     start_time = time.time()
     ds = Oasst1Dataset()
     ds_workload = ds.to_workload()
+    compression_ratio = 0.2
+    ds_workload_compressed = ds.to_workload(compression_ratio=compression_ratio)
+    assert len(ds_workload_compressed) == len(ds_workload)
+    for i in range(len(ds_workload)):
+        assert ds_workload_compressed[i][0] == ds_workload[i][0] / compression_ratio
+    print([ds_workload[i][0] for i in range(10)])
+    print([ds_workload_compressed[i][0] for i in range(10)])
     print(len(ds_workload))
     # rprint(ds.grouped_data['bebaaa50-9c9e-4fee-be15-1ff4d7efea8a'])
     rprint(ds_workload[1])
