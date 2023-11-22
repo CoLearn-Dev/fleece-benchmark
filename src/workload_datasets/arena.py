@@ -1,9 +1,9 @@
 from typing import List, Tuple
 from .protocol import Workload, Visit, SimReq, OpenAIMessage
-from .utils import key_timestamp_to_offset, cache
+from .utils import key_timestamp_to_offset, cache, compress_workload
 
 
-class ArenaDataset:
+class ArenaDataset:]
     def __init__(self):
         from datasets import load_dataset
 
@@ -11,7 +11,7 @@ class ArenaDataset:
 
     @cache()
     def to_workload(
-        self, separate_req_in_one_visit_with_interval=None, **kargs
+        self, separate_req_in_one_visit_with_interval=None, **kwargs
     ) -> Workload:
         def parse_simreq(d, i) -> SimReq:
             separate_req_in_one_visit = (
@@ -39,19 +39,21 @@ class ArenaDataset:
                 stream=True,
                 model=None,  # FIXME: load model info from arena?
                 n=1,
-                temperature=kargs.get("temperature", 1),
-                top_p=kargs.get("top_p", 1),
-                max_tokens=kargs.get("max_tokens", None),
+                temperature=kwargs.get("temperature", 1),
+                top_p=kwargs.get("top_p", 1),
+                max_tokens=kwargs.get("max_tokens", None),
             )
+
+        compression_ratio = kwargs.pop("compression_ratio",1.0)
 
         if separate_req_in_one_visit_with_interval is None:
 
             def parse_visit(d) -> Visit:
                 return [(None, parse_simreq(d, i)) for i in range(d["turn"])]
 
-            return key_timestamp_to_offset(
+            return compress_workload(key_timestamp_to_offset(
                 [(d["tstamp"], parse_visit(d)) for d in self.raw["train"]]
-            )
+            ), compression_ratio)
         else:
 
             def parse_timestamped_visits(d) -> List[Tuple[float, Visit]]:
@@ -63,9 +65,9 @@ class ArenaDataset:
                     for i in range(d["turn"])
                 ]
 
-            return key_timestamp_to_offset(
+            return compress_workload(key_timestamp_to_offset(
                 sum([parse_timestamped_visits(d) for d in self.raw["train"]], [])
-            )
+            ), compression_ratio)
 
     def dialogs(self) -> List[str]:
         return sum(
@@ -85,6 +87,7 @@ if __name__ == "__main__":
     start_time = time.time()
     ds = ArenaDataset()
     ds_workload = ds.to_workload()
+    end_time = time.time()
     print(len(ds_workload))
     rprint(ds_workload[0])
     for d in ds_workload:
@@ -101,4 +104,5 @@ if __name__ == "__main__":
             break
     for d in ds_workload_sep:
         assert_visit_is_legal(d[1])
+    print(f"load time: {end_time - start_time}")
     print(f"Time used: {time.time() - start_time}")
