@@ -21,7 +21,7 @@ import { Tooltip, Statistic, Flex, List, Image, Descriptions, Breadcrumb, Layout
 import type { DescriptionsProps } from 'antd';
 import { Line, Gauge } from '@antv/g2plot';
 import axios from 'axios';
-const { Title, Paragraph, Text, Link } = Typography;
+const { Title, Paragraph, Link } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 
@@ -160,6 +160,7 @@ const App = ({ tid }: AppProps) => {
       "url": url_header + values.url + "/v1",
       "model": model,
       "dataset_name": values.dataset,
+      "endpoint_type": values.endpoint_type,
       "key": values.key,
       "dataset_config": dataset_config,
       "workload_range": [minValue, maxValue],
@@ -276,6 +277,7 @@ const App = ({ tid }: AppProps) => {
   };
 
   const [data_source, setDataSource] = useState<string>("");
+  // const [endpoint_type, setEndpointType] = useState<string>("");
   const [activate_interval, setActivateInterval] = useState<boolean>(false);
   const workload_range = () => {
     if (data_source === "arena") {
@@ -635,7 +637,7 @@ const App = ({ tid }: AppProps) => {
                       <Title>LLM Serving Speed Test</Title>
                       {/* <Title level={2}>Description</Title> */}
                       <Paragraph>
-                      This project provides a benchmark tool for evaluating the inference speed for any LLM serving endpoint (currently supports <Link href="https://platform.openai.com/docs/api-reference/chat/create">OpenAI Chat Completion API</Link>). 
+                      This project provides a benchmark tool for evaluating the inference speed for any LLM serving endpoint (currently supports <Link target="_blank" href="https://platform.openai.com/docs/api-reference/chat/create">OpenAI Chat Completion API</Link>). 
                       It includes evaluations of the endpoint's performance and stability and can provide reports including many important metrics, such as:
                       <ul>
                         <li>the throughput (total TPS for the whole endpoint)</li>
@@ -698,7 +700,7 @@ const App = ({ tid }: AppProps) => {
                     <Typography>
                       As an open-source project, you can setup your self-host benchmark backend. You just need to follow these steps:
                       <ul>
-                        <li>Step 1: clone our <Link href="https://github.com/CoLearn-Dev/fleece-benchmark">repo</Link> with <pre>git clone https://github.com/CoLearn-Dev/fleece-benchmark.git</pre></li>
+                        <li>Step 1: clone our <Link target="_blank" href="https://github.com/CoLearn-Dev/fleece-benchmark">repo</Link> with <pre>git clone https://github.com/CoLearn-Dev/fleece-benchmark.git</pre></li>
                         <li>Step 2: setup python environment <pre>pip install -r requentment.txt</pre></li>
                         <li>Step 3: create the dir for data <pre>mkdir tmp</pre></li>
                         <li>Step 4: start the api_server of backend <pre>python -m src.api_server.app</pre></li>
@@ -713,6 +715,15 @@ const App = ({ tid }: AppProps) => {
                             <Button type="primary" onClick={(e)=>(setBackendUrl(input_backend_url))}>Set</Button>
                           </Space.Compact>
                         </li>
+                      </ul>
+                    </Typography>
+                  </Card>
+                  <Card title="Dataset source">
+                    <Typography>
+                      Thanks to recently released dataset, out benchmark tool can provide workloads from the real world. Currently, we support two datasets:
+                      <ul>
+                        <li><Link href="https://huggingface.co/datasets/lmsys/chatbot_arena_conversations" target="_blank">lmsys/chatbot_arena_conversations</Link></li>
+                        <li><Link href="https://huggingface.co/datasets/OpenAssistant/oasst1" target="_blank">OpenAssistant/oasst1</Link></li>
                       </ul>
                     </Typography>
                   </Card>
@@ -778,6 +789,16 @@ const App = ({ tid }: AppProps) => {
                         hidden={!costum_model}
                       >
                         <Input />
+                      </Form.Item>
+                      <Form.Item
+                        label="endpoint_type"
+                        name="endpoint_type"
+                        rules={[{ required: true, message: 'Please choose one endpoint type' }]}
+                      >
+                        <Select defaultValue={"openai"}>
+                          <Select.Option value="openai">OpenAI</Select.Option>
+                          <Select.Option value="togetherai">together.ai</Select.Option>
+                        </Select>
                       </Form.Item>
                       <Form.Item
                         label="dataset"
