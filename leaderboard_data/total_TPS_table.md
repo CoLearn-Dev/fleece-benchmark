@@ -1,7 +1,7 @@
-| Name | Max |
+| Name | Peak TPS |
 |:----:|:---:|
-| openai(gpt-3.5-turbo) | 2902.0 |
-| openai(gpt-4) | 1352.6 |
-| anyscale | 806.2 |
-| togetherai | 4079.4 |
-| aws(bedrock) | 2559.6 |
+| openai(gpt-3.5-turbo) | 2728.8 |
+| openai(gpt-4) | 1385.4 |
+| anyscale | 854.8 |
+| **togetherai** | **4344.4** |
+| aws(bedrock) | 2533.6 |

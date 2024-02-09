@@ -22,7 +22,7 @@ This metric represents the capacity of the endpoint to parallel requests. For ch
 
 > Total TPS = sum(tps_per_requests)
 
-## Run Configurations
+## Config the workload used in the benchmarking
 
 You can change the config in the `auto-testing.py` to modify the workload and some args.
 
@@ -31,6 +31,8 @@ You can change the config in the `auto-testing.py` to modify the workload and so
 ```
 
 In our testing config, we send 10 requests to the endpoints for one second and we will keep sending requests for 2 minutes.
+
+To learn more about our workload design, please refer to our blog post [here](https://medium.com/p/ba3cca28f246).
 
 ## Time To First Token (seconds)
 
@@ -56,4 +58,6 @@ The sum of all ongoing requests' TPS. In this part, we measure the peak TPS in t
 
 ## Feedback
 
-* please use the issue to report any bugs or suggestions.
+* Please use the issue to report any bugs or suggestions.
+* Please contact us if you want to add your endpoint to the leaderboard.
+* You can also use our repo to run the testing by yourself.

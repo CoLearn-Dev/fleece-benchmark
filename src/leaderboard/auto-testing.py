@@ -17,7 +17,7 @@ test_config = {
         "func": "lambda t: int(t / 0.1 + 1) if t < 120 else None",
         "prompt_source": "arena",
     },
-    "workload_range": [None, None],
+    # "workload_range": [None, None],
     "kwargs": {
         "temperature": 0.7,
         "top_p": 1,
@@ -77,6 +77,7 @@ endpoints = {
 
 # Test start
 cur_time = time.strftime("%Y-%m-%d-%H-%M-%S")
+print(f"current time: {cur_time}")
 endpoint_configs = {k: {**asdict(v), **test_config} for k, v in endpoints.items()}
 results = {}
 hashs = []
@@ -113,8 +114,8 @@ with open(f"tmp/leaderboard_{cur_time}/result.json", "w") as f:
 assert len(set(hashs)) == 1, str(hashs)
 
 # Load_data
-cur_time = "2024-02-09-06-18-31"
-results = json.load(open(f"tmp/leaderboard_{cur_time}/result.json", "r"))
+# cur_time = "2024-02-09-08-49-37"
+# results = json.load(open(f"tmp/leaderboard_{cur_time}/result.json", "r"))
 
 import rich
 from rich.table import Table
@@ -187,29 +188,40 @@ draw("TPOT", df)
 def get_table(name_list, data_list):
     cols = ["| Name | Mean | Min | Max | Median | p25 | p75 | p5 | p95 |"]
     cols.append("|:----:|:----:|:---:|:---:|:------:|:---:|:---:|:--:|:---:|")
+    mediam_list = []
+    values = []
     for i in range(len(data_list)):
         d = data_list[i]
-        mean = round(np.mean(d), 3)
-        median = round(np.median(d), 3)
-        min = round(np.min(d), 3)
-        max = round(np.max(d), 3)
-        p25 = round(np.percentile(d, 25), 3)
-        p75 = round(np.percentile(d, 75), 3)
-        p5 = round(np.percentile(d, 5), 3)
-        p95 = round(np.percentile(d, 95), 3)
-        cols.append(
-            f"| {name_list[i]} | {mean} | {min} | {max} | {median} | {p25} | {p75} | {p5} | {p95} |"
-        )
+        mean = np.mean(d)
+        min = np.min(d)
+        max = np.max(d)
+        median = np.median(d)
+        p25 = np.percentile(d, 25)
+        p75 = np.percentile(d, 75)
+        p5 = np.percentile(d, 5)
+        p95 = np.percentile(d, 95)
+        mediam_list.append(median)
+        values.append([mean, min, max, median, p25, p75, p5, p95])
+    best_index = np.argmin(mediam_list)
+    for i in range(len(values)):
+        if i == best_index:
+            col_str = f'| **{name_list[i]}** | **{values[i][0]:.3f}** | **{values[i][1]:.3f}** | **{values[i][2]:.3f}** | **{values[i][3]:.3f}** | **{values[i][4]:.3f}** | **{values[i][5]:.3f}** | **{values[i][6]:.3f}** | **{values[i][7]:.3f}** |'
+        else:
+            col_str = f'| {name_list[i]} | {values[i][0]:.3f} | {values[i][1]:.3f} | {values[i][2]:.3f} | {values[i][3]:.3f} | {values[i][4]:.3f} | {values[i][5]:.3f} | {values[i][6]:.3f} | {values[i][7]:.3f} |'
+        cols.append(col_str)
     return "\n".join(cols)
 
 
 def get_max_table(name_list, data_list):
-    cols = ["| Name | Max |"]
+    cols = ["| Name | Peak TPS |"]
     cols.append("|:----:|:---:|")
-    for i in range(len(data_list)):
-        d = data_list[i]
-        max = round(np.max(d), 3)
-        cols.append(f"| {name_list[i]} | {max} |")
+    value_list = [np.max(d) for d in data_list]
+    max_index = np.argmax(value_list)
+    for i in range(len(value_list)):
+        if i == max_index:
+            cols.append(f"| **{name_list[i]}** | **{value_list[i]:.1f}** |")
+        else:
+            cols.append(f"| {name_list[i]} | {value_list[i]:.1f} |")
     return "\n".join(cols)
 
 
@@ -238,11 +250,12 @@ env = Environment(loader=FileSystemLoader("src/leaderboard"))
 template = env.get_template("leaderboard_template.md")
 data = {
     "last_update": cur_time,
-    "run_config": test_config,
+    "run_config": json.dumps(test_config, indent=4),
     "TTFT_table": TTFT_table,
     "TPOT_table": TPOT_table,
     "Total_TPS_table": total_TPS_table,
 }
 rendered_md = template.render(data)
+os.system('rm "LLM Endpoint Performance Leaderboard.md"')
 with open("LLM Endpoint Performance Leaderboard.md", "w") as f:
     f.write(rendered_md)
