@@ -13,7 +13,7 @@ class RequestLevelReport:
     SLO: float  # Service Level Objective
     time_per_request: List[float]
     token_per_request: List[int]
-    token_timestamp: List[Tuple[float, int]]
+    token_timestamp: List[Tuple[float, int]]    # (pkg_timestamp, token_in_this_pkg)
     TPOT: List[float]  # Time Per Output Token (avg for each request)
     Throughput: float
     tokenizer_name: str

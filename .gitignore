@@ -169,10 +169,15 @@ data/
 .vscode/
 
 tmp
+export
 node_modules
 
 *.pem
 *.pem.outdate
+
+# redis
+redis-*
+*.rdb
 
 # leaderboard
 leaderboard_data/old_data
